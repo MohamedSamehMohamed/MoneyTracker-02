@@ -1,3 +1,6 @@
+import type { Account, CreateAccountInput, UpdateAccountInput } from '../types/account';
+import type { Transaction, CreateTransactionInput, UpdateTransactionInput, TransactionFilters, Category, TransactionListResponse } from '../types/transaction';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 interface ApiError {
@@ -17,7 +20,11 @@ export async function apiFetch<T = any>(
   const url = `${API_BASE_URL}${endpoint}`;
 
   const headers = new Headers(fetchOptions.headers);
-  headers.set("Content-Type", "application/json");
+
+  // Only set Content-Type for requests with a body
+  if (fetchOptions.body) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (!skipAuth) {
     const token = localStorage.getItem("authToken");
@@ -64,4 +71,73 @@ export const authApi = {
     }),
 
   getMe: () => apiFetch("/auth/me", { method: "GET" }),
+};
+
+export const accountsApi = {
+  list: () => apiFetch<{ accounts: Account[] }>("/accounts", { method: "GET" }),
+
+  create: (data: CreateAccountInput) =>
+    apiFetch<{ account: Account }>("/accounts", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: UpdateAccountInput) =>
+    apiFetch<{ account: Account }>(`/accounts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/accounts/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+export const transactionsApi = {
+  list: (filters?: TransactionFilters) => {
+    const params = new URLSearchParams();
+    if (filters?.page !== undefined) params.append("page", filters.page.toString());
+    if (filters?.limit !== undefined) params.append("limit", filters.limit.toString());
+    if (filters?.accountId !== undefined) params.append("accountId", filters.accountId);
+    if (filters?.categoryId !== undefined) params.append("categoryId", filters.categoryId);
+    if (filters?.type !== undefined) params.append("type", filters.type);
+    if (filters?.dateFrom !== undefined) params.append("dateFrom", filters.dateFrom);
+    if (filters?.dateTo !== undefined) params.append("dateTo", filters.dateTo);
+
+    const query = params.toString();
+    const endpoint = query ? `/transactions?${query}` : "/transactions";
+    return apiFetch<TransactionListResponse>(endpoint, { method: "GET" });
+  },
+
+  get: (id: string) =>
+    apiFetch<{ transaction: Transaction }>(`/transactions/${id}`, {
+      method: "GET",
+    }),
+
+  create: (data: CreateTransactionInput) =>
+    apiFetch<{ transaction: Transaction }>("/transactions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: UpdateTransactionInput) =>
+    apiFetch<{ transaction: Transaction }>(`/transactions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/transactions/${id}`, {
+      method: "DELETE",
+    }),
+};
+
+export const categoriesApi = {
+  list: (type?: string) => {
+    const query = type ? `?type=${type}` : "";
+    return apiFetch<{ categories: Category[] }>(`/categories${query}`, {
+      method: "GET",
+    });
+  },
 };

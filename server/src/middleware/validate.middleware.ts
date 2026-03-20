@@ -1,11 +1,21 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema, ZodError } from "zod";
 
-export function validateMiddleware(schema: ZodSchema) {
+export function validateMiddleware(
+  schema: ZodSchema,
+  source: "body" | "query" = "body"
+) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const validatedData = await schema.parseAsync(req.body);
-      req.body = validatedData;
+      const dataToValidate = source === "query" ? req.query : req.body;
+      const validatedData = await schema.parseAsync(dataToValidate);
+
+      if (source === "query") {
+        req.query = validatedData as any;
+      } else {
+        req.body = validatedData;
+      }
+
       next();
     } catch (error) {
       if (error instanceof ZodError) {
@@ -18,7 +28,9 @@ export function validateMiddleware(schema: ZodSchema) {
           details: errors,
         });
       }
-      return res.status(400).json({ error: "Invalid request body" });
+      return res.status(400).json({
+        error: `Invalid ${source}`,
+      });
     }
   };
 }

@@ -16,7 +16,9 @@
       "Bash(npx vite:*)",
       "Bash(./.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
       "Bash(grep \"\\\\.ts$\")",
-      "Bash(NODE_PATH=. npx prisma db seed)"
+      "Bash(NODE_PATH=. npx prisma db seed)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ]
   }
 }
