@@ -305,42 +305,42 @@ MoneyTrackerNew/
 
 ---
 
-## Phase 1 — Project Setup & Foundation
+## Phase 1 — Project Setup & Foundation ✅
 
 > **Goal**: Get both apps running with zero features, just the skeleton.
 
-- [ ] 1.1 Create `server/` folder, init npm, install Express + TypeScript + ts-node-dev
-- [ ] 1.2 Create `client/` folder using Vite + React + TypeScript template
-- [ ] 1.3 Install and configure Tailwind CSS in client
-- [ ] 1.4 Set up folder structure (as defined in Section 7)
-- [ ] 1.5 Add `.env` files with placeholder values (both client and server)
-- [ ] 1.6 Add `.gitignore` (node_modules, .env, dist, etc.)
-- [ ] 1.7 Server: create basic Express app with health-check route (`GET /api/health`)
-- [ ] 1.8 Client: create basic App with React Router and placeholder pages
-- [ ] 1.9 Verify both apps run (`npm run dev` in each)
+- [x] 1.1 Create `server/` folder, init npm, install Express + TypeScript + ts-node-dev
+- [x] 1.2 Create `client/` folder using Vite + React + TypeScript template
+- [x] 1.3 Install and configure Tailwind CSS in client
+- [x] 1.4 Set up folder structure (as defined in Section 7)
+- [x] 1.5 Add `.env` files with placeholder values (both client and server)
+- [x] 1.6 Add `.gitignore` (node_modules, .env, dist, etc.)
+- [x] 1.7 Server: create basic Express app with health-check route (`GET /api/health`)
+- [x] 1.8 Client: create basic App with React Router and placeholder pages
+- [x] 1.9 Verify both apps run (`npm run dev` in each)
 
 **Result**: Server running on :3001, Client running on :5173, both responding.
 
 ---
 
-## Phase 2 — Database & Auth
+## Phase 2 — Database & Auth ✅
 
 > **Goal**: Users can register, login, and access protected routes.
 
-- [ ] 2.1 Install and configure Prisma with PostgreSQL
-- [ ] 2.2 Define Prisma schema: User, Account, Transaction, Category, ExchangeRate models
-- [ ] 2.3 Run initial migration (`prisma migrate dev`)
-- [ ] 2.4 Create auth routes: `POST /api/auth/register`, `POST /api/auth/login`
-- [ ] 2.5 Implement password hashing with bcrypt
-- [ ] 2.6 Implement JWT token generation and verification
-- [ ] 2.7 Create auth middleware (protect routes, extract user from token)
-- [ ] 2.8 Create `GET /api/auth/me` route
-- [ ] 2.9 Seed default categories (Food, Transport, Salary, Rent, Entertainment, etc.)
-- [ ] 2.10 Client: build Login page with form
-- [ ] 2.11 Client: build Register page with form
-- [ ] 2.12 Client: create AuthContext (store token, user, login/logout functions)
-- [ ] 2.13 Client: add protected route wrapper (redirect to /login if not authenticated)
-- [ ] 2.14 Client: create API service layer (axios/fetch with auth header)
+- [x] 2.1 Install and configure Prisma with PostgreSQL
+- [x] 2.2 Define Prisma schema: User, Account, Transaction, Category, ExchangeRate models
+- [x] 2.3 Run initial migration (`prisma migrate dev`)
+- [x] 2.4 Create auth routes: `POST /api/auth/register`, `POST /api/auth/login`
+- [x] 2.5 Implement password hashing with bcrypt
+- [x] 2.6 Implement JWT token generation and verification
+- [x] 2.7 Create auth middleware (protect routes, extract user from token)
+- [x] 2.8 Create `GET /api/auth/me` route
+- [x] 2.9 Seed default categories (Food, Transport, Salary, Rent, Entertainment, etc.)
+- [x] 2.10 Client: build Login page with form
+- [x] 2.11 Client: build Register page with form
+- [x] 2.12 Client: create AuthContext (store token, user, login/logout functions)
+- [x] 2.13 Client: add protected route wrapper (redirect to /login if not authenticated)
+- [x] 2.14 Client: create API service layer (axios/fetch with auth header)
 
 **Result**: Users can register, login, and stay authenticated. Protected pages redirect to login.
 
