@@ -31,12 +31,6 @@ export function Sidebar() {
           Transactions
         </Link>
         <Link
-          to="/transactions/new"
-          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
-        >
-          New Transaction
-        </Link>
-        <Link
           to="/accounts"
           className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
         >
