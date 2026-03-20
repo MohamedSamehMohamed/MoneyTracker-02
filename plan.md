@@ -504,3 +504,10 @@ PORT=3001
 ```
 VITE_API_URL=http://localhost:3001/api
 ```
+
+How to run
+# Terminal 1 - Backend
+cd server && npm run dev
+
+# Terminal 2 - Frontend  
+cd client && npm run dev

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 -Json -ShortName \"project-setup-foundation\" \"Phase 1 - Project Setup and Foundation\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/setup-plan.ps1 -Json)",
+      "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json)",
+      "Bash(pwsh -NoProfile -Command \"./.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
+      "Bash(/c/WINDOWS/System32/WindowsPowerShell/v1.0/powershell -NoProfile -Command \"./.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
+      "Bash(npm install:*)",
+      "Bash(npm create:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"Implement Phase 1-7: Project setup and foundation:*)",
+      "Bash(git commit -m \"Mark all 28 tasks complete in Phase 1-7 implementation:*)",
+      "Bash(npx vite:*)",
+      "Bash(./.specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)",
+      "Bash(grep \"\\\\.ts$\")",
+      "Bash(NODE_PATH=. npx prisma db seed)"
+    ]
+  }
+}

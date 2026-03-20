@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id              String      @id @default(uuid())
+  name            String      @db.VarChar(100)
+  email           String      @unique @db.VarChar(255)
+  password        String      @db.VarChar(255)
+  baseCurrency    String      @default("EGP") @db.VarChar(3)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  accounts        Account[]
+  transactions    Transaction[]
+  categories      Category[]
+
+  @@map("users")
+}
+
+// Account model
+model Account {
+  id              String      @id @default(uuid())
+  userId          String
+  name            String      @db.VarChar(100)
+  type            AccountType
+  currency        String      @db.VarChar(10)
+  balance         BigInt      @default(0)
+  icon            String?     @db.VarChar(50)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceTransactions Transaction[] @relation("source")
+  transferTransactions Transaction[] @relation("transfer")
+
+  @@map("accounts")
+}
+
+// Transaction model
+model Transaction {
+  id              String      @id @default(uuid())
+  userId          String
+  accountId       String
+  type            TransactionType
+  amount          BigInt
+  categoryId      String?
+  note            String?
+  date            DateTime    @db.Date
+  transferToId    String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account         Account     @relation("source", fields: [accountId], references: [id], onDelete: Cascade)
+  category        Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  transferAccount Account?    @relation("transfer", fields: [transferToId], references: [id], onDelete: SetNull)
+
+  @@map("transactions")
+}
+
+// Category model
+model Category {
+  id              String      @id @default(uuid())
+  userId          String?
+  name            String      @db.VarChar(50)
+  type            CategoryType
+  icon            String?     @db.VarChar(50)
+  color           String?     @db.VarChar(7)
+
+  // Relations
+  user            User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+
+  @@map("categories")
+}
+
+// ExchangeRate model
+model ExchangeRate {
+  id              String      @id @default(uuid())
+  fromCurrency    String      @db.VarChar(10)
+  toCurrency      String      @db.VarChar(10)
+  rate            Decimal     @db.Decimal(18, 6)
+  fetchedAt       DateTime
+  source          String      @db.VarChar(50)
+
+  @@unique([fromCurrency, toCurrency, fetchedAt])
+  @@map("exchange_rates")
+}
+
+// Enums
+enum AccountType {
+  cash
+  bank
+  wallet
+  gold
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
+}
+
+enum CategoryType {
+  income
+  expense
+}
