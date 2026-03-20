@@ -9,12 +9,8 @@ function serializeTransaction(transaction: any) {
   return {
     ...transaction,
     amount: transaction.amount.toString(),
-    account: transaction.account
-      ? { ...transaction.account, balance: transaction.account.balance.toString() }
-      : null,
-    transferAccount: transaction.transferAccount
-      ? { ...transaction.transferAccount, balance: transaction.transferAccount.balance.toString() }
-      : null,
+    account: transaction.account || null,
+    transferAccount: transaction.transferAccount || null,
   };
 }
 
