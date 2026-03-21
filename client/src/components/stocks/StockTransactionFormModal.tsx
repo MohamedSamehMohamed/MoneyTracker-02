@@ -14,12 +14,12 @@ const formSchema = z.object({
   pricePerShare: z.string().refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, {
     message: 'Price must be a positive number',
   }),
-  currency: z.string().min(1, 'Currency is required'),
+  currency: z.string().min(1, 'Currency is required').transform(v => v.toUpperCase()),
   date: z.string().refine(
     (v) => {
-      const selected = new Date(v + 'T00:00:00Z');
+      const selected = new Date(v + 'T00:00:00');  // local time, not UTC
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      today.setHours(23, 59, 59, 999);  // end of today in local time
       return selected <= today;
     },
     { message: 'Date cannot be in the future' }
@@ -75,8 +75,8 @@ export function StockTransactionFormModal({
         shares: editingTransaction.shares,
         pricePerShare: editingTransaction.pricePerShare,
         currency: editingTransaction.currency,
-        date: editingTransaction.date,
-        note: editingTransaction.note,
+        date: editingTransaction.date.split('T')[0],
+        note: editingTransaction.note || '',
         accountId: editingTransaction.accountId || '',
       });
     } else {
@@ -90,22 +90,17 @@ export function StockTransactionFormModal({
   const filteredAccounts = accounts.filter((acc) => acc.currency === selectedCurrency || !selectedCurrency);
 
   const handleFormSubmit = async (data: FormData) => {
-    try {
-      await onSubmit({
-        type: data.type,
-        company: data.company,
-        shares: data.shares,
-        pricePerShare: data.pricePerShare,
-        currency: data.currency,
-        date: data.date,
-        note: data.note || undefined,
-        accountId: data.accountId || undefined,
-      } as CreateStockTransactionInput);
-      reset();
-      onClose();
-    } catch (err) {
-      // Error is handled by parent component
-    }
+    await onSubmit({
+      type: data.type,
+      company: data.company,
+      shares: data.shares,
+      pricePerShare: data.pricePerShare,
+      currency: data.currency,
+      date: data.date,
+      note: data.note || undefined,
+      accountId: data.accountId || undefined,
+    } as CreateStockTransactionInput);
+    // Let parent component handle closing and form reset
   };
 
   if (!isOpen) return null;
@@ -201,7 +196,7 @@ export function StockTransactionFormModal({
                 type="text"
                 placeholder="USD"
                 maxLength={10}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-transparent uppercase"
               />
               {errors.currency && (
                 <p className="mt-1 text-sm text-red-600">{errors.currency.message}</p>

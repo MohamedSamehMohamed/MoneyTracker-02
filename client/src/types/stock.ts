@@ -11,9 +11,10 @@ export interface StockTransaction {
   pricePerShare: string; // Decimal as string (Decimal(18,2))
   currency: string;
   date: string; // ISO date string (YYYY-MM-DD)
-  note?: string;
-  realizedGain?: string; // Decimal as string for sell transactions
-  accountId?: string;
+  note: string | null;
+  realizedGain: string | null; // Decimal as string for sell transactions
+  accountId: string | null;
+  account?: { id: string; name: string; currency: string } | null;
   createdAt: string; // ISO datetime
   updatedAt: string; // ISO datetime
 }
@@ -47,7 +48,7 @@ export interface UpdateStockTransactionInput {
 
 export interface StockTransactionFilters {
   company?: string;
-  type?: StockTransactionType | 'all';
+  type?: StockTransactionType;
   dateFrom?: string;
   dateTo?: string;
   page?: number;

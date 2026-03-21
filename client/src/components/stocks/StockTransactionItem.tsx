@@ -1,4 +1,5 @@
 import type { StockTransaction } from '../../types/stock';
+import { formatShares, formatPrice, formatCurrency, formatDate } from '../../utils/formatters';
 
 interface StockTransactionItemProps {
   transaction: StockTransaction;
@@ -15,16 +16,6 @@ export function StockTransactionItem({
   const shares = parseFloat(transaction.shares);
   const price = parseFloat(transaction.pricePerShare);
   const totalValue = shares * price;
-  const date = new Date(transaction.date).toLocaleDateString();
-
-  const formatNumber = (num: number, decimals = 2) => {
-    return num.toFixed(decimals);
-  };
-
-  const formatShares = (num: number) => {
-    const formatted = num.toFixed(8);
-    return formatted.replace(/\.?0+$/, '');
-  };
 
   const realizedGain = transaction.realizedGain
     ? parseFloat(transaction.realizedGain)
@@ -48,11 +39,11 @@ export function StockTransactionItem({
             <p className="font-medium text-gray-900">{transaction.company}</p>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-sm text-gray-500">
-                {formatShares(shares)} @ {transaction.currency} {formatNumber(price)}
+                {formatShares(shares)} @ {transaction.currency} {formatPrice(price)}
               </p>
-              {transaction.accountId && (
+              {transaction.account && (
                 <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
-                  Linked account
+                  {transaction.account.name}
                 </span>
               )}
             </div>
@@ -63,14 +54,14 @@ export function StockTransactionItem({
       {/* Values */}
       <div className="text-right mr-4">
         <p className="font-semibold text-gray-900">
-          {transaction.currency} {formatNumber(totalValue)}
+          {formatCurrency(totalValue, transaction.currency)}
         </p>
         {realizedGain !== null && !isBuy && (
           <p className={`text-sm ${realizedGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            Gain: {formatNumber(realizedGain)}
+            Gain: {formatCurrency(realizedGain, transaction.currency)}
           </p>
         )}
-        <p className="text-xs text-gray-500">{date}</p>
+        <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>
       </div>
 
       {/* Actions */}

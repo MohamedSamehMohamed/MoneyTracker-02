@@ -3,7 +3,12 @@ interface DeleteStockTransactionDialogProps {
   isLoading?: boolean;
   onConfirm: () => Promise<void>;
   onCancel: () => void;
-  company?: string;
+  transaction?: {
+    company: string;
+    type: string;
+    shares: string;
+    date: string;
+  } | null;
 }
 
 export function DeleteStockTransactionDialog({
@@ -11,7 +16,7 @@ export function DeleteStockTransactionDialog({
   isLoading = false,
   onConfirm,
   onCancel,
-  company,
+  transaction,
 }: DeleteStockTransactionDialogProps) {
   if (!isOpen) return null;
 
@@ -29,8 +34,13 @@ export function DeleteStockTransactionDialog({
         <div className="p-6">
           <h2 className="text-lg font-bold text-gray-900 mb-2">Delete Transaction</h2>
           <p className="text-gray-600 mb-6">
-            Are you sure you want to delete this{company ? ` ${company}` : ''} stock transaction?
-            This action cannot be undone.
+            Are you sure you want to delete this stock transaction?
+            {transaction && (
+              <span className="block mt-2 text-sm font-medium">
+                {transaction.type.toUpperCase()} {transaction.shares} shares of {transaction.company} on {transaction.date.split('T')[0]}
+              </span>
+            )}
+            <span className="block mt-1 text-sm">This action cannot be undone.</span>
           </p>
 
           <div className="flex gap-3">

@@ -66,19 +66,38 @@ export function StockTransactionList({
             </button>
 
             <div className="flex items-center gap-1">
-              {Array.from({ length: data.totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => onPageChange(page)}
-                  className={`px-3 py-1 rounded-lg text-sm ${
-                    page === data.page
-                      ? 'bg-blue-600 text-white'
-                      : 'border border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: data.totalPages }, (_, i) => i + 1)
+                .filter((page) => {
+                  // Show first, last, and pages near current
+                  return page === 1 ||
+                    page === data.totalPages ||
+                    Math.abs(page - data.page) <= 2;
+                })
+                .reduce<(number | string)[]>((acc, page, idx, arr) => {
+                  // Add ellipsis gaps
+                  if (idx > 0 && page - (arr[idx - 1] as number) > 1) {
+                    acc.push('...');
+                  }
+                  acc.push(page);
+                  return acc;
+                }, [])
+                .map((item, idx) =>
+                  typeof item === 'string' ? (
+                    <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+                  ) : (
+                    <button
+                      key={item}
+                      onClick={() => onPageChange(item)}
+                      className={`px-3 py-1 rounded-lg text-sm ${
+                        item === data.page
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
             </div>
 
             <button

@@ -12,6 +12,7 @@ function serializeStockTransaction(transaction: any) {
     shares: transaction.shares.toString(),
     pricePerShare: transaction.pricePerShare.toString(),
     realizedGain: transaction.realizedGain ? transaction.realizedGain.toString() : null,
+    account: transaction.account || null,
   };
 }
 
@@ -41,38 +42,38 @@ export async function createStockTransaction(
     }
   }
 
-  // Validate currency consistency for company
-  const existingTransaction = await prisma.stockTransaction.findFirst({
-    where: {
-      userId,
-      company: input.company,
-    },
-  });
+  // Create transaction (with realized gain for sells)
+  const transaction = await prisma.$transaction(async (tx) => {
+    // Validate currency consistency for company (inside transaction to prevent race)
+    const existingTransaction = await tx.stockTransaction.findFirst({
+      where: {
+        userId,
+        company: input.company,
+      },
+    });
 
-  if (existingTransaction && existingTransaction.currency !== input.currency) {
-    const error = new Error(
-      `Currency mismatch: This company already has transactions in ${existingTransaction.currency}`
-    ) as any;
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // For sells, validate we have enough shares to sell
-  if (input.type === "sell") {
-    const heldShares = await calculateHeldShares(userId, input.company);
-    const sellShares = new Decimal(input.shares.toString());
-
-    if (sellShares.greaterThan(heldShares)) {
+    if (existingTransaction && existingTransaction.currency !== input.currency) {
       const error = new Error(
-        `Cannot sell ${input.shares} shares: Only ${heldShares.toString()} shares held`
+        `Currency mismatch: This company already has transactions in ${existingTransaction.currency}`
       ) as any;
       error.statusCode = 400;
       throw error;
     }
-  }
 
-  // Create transaction (with realized gain for sells)
-  const transaction = await prisma.$transaction(async (tx) => {
+    // For sells, validate we have enough shares to sell (inside transaction to prevent race)
+    if (input.type === "sell") {
+      const heldShares = await calculateHeldShares(userId, input.company, tx);
+      const sellShares = new Decimal(input.shares.toString());
+
+      if (sellShares.greaterThan(heldShares)) {
+        const error = new Error(
+          `Cannot sell ${input.shares} shares: Only ${heldShares.toString()} shares held`
+        ) as any;
+        error.statusCode = 400;
+        throw error;
+      }
+    }
+
     let realizedGain = null;
 
     if (input.type === "sell") {
@@ -122,12 +123,12 @@ export async function createStockTransaction(
       if (input.type === "buy") {
         await tx.account.update({
           where: { id: input.accountId },
-          data: { balance: { decrement: total.toNumber() } },
+          data: { balance: { decrement: Math.round(total.toNumber()) } },
         });
       } else if (input.type === "sell") {
         await tx.account.update({
           where: { id: input.accountId },
-          data: { balance: { increment: total.toNumber() } },
+          data: { balance: { increment: Math.round(total.toNumber()) } },
         });
       }
     }
@@ -158,6 +159,13 @@ export async function getStockTransaction(
       accountId: true,
       createdAt: true,
       updatedAt: true,
+      account: {
+        select: {
+          id: true,
+          name: true,
+          currency: true,
+        },
+      },
     },
   });
 
@@ -204,6 +212,13 @@ export async function listStockTransactions(
         accountId: true,
         createdAt: true,
         updatedAt: true,
+        account: {
+          select: {
+            id: true,
+            name: true,
+            currency: true,
+          },
+        },
       },
       orderBy: [{ date: "desc" }, { createdAt: "desc" }],
       skip,
@@ -238,7 +253,6 @@ export async function updateStockTransaction(
     throw error;
   }
 
-  // Can't change company or type after creation
   const updateData: any = {};
   if (input.shares !== undefined) updateData.shares = new Decimal(input.shares.toString());
   if (input.pricePerShare !== undefined)
@@ -269,24 +283,54 @@ export async function updateStockTransaction(
     }
   }
 
-  const updated = await prisma.stockTransaction.update({
-    where: { id: transactionId },
-    data: updateData,
-    select: {
-      id: true,
-      userId: true,
-      type: true,
-      company: true,
-      shares: true,
-      pricePerShare: true,
-      currency: true,
-      date: true,
-      note: true,
-      realizedGain: true,
-      accountId: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+  const updated = await prisma.$transaction(async (tx) => {
+    // Adjust linked account balance if shares or price changed
+    if (transaction.accountId && (input.shares !== undefined || input.pricePerShare !== undefined)) {
+      const oldShares = transaction.shares;
+      const oldPrice = transaction.pricePerShare;
+      const newShares = input.shares ? new Decimal(input.shares.toString()) : oldShares;
+      const newPrice = input.pricePerShare ? new Decimal(input.pricePerShare.toString()) : oldPrice;
+
+      const oldTotal = oldShares.times(oldPrice).times(100);
+      const newTotal = newShares.times(newPrice).times(100);
+      const diff = newTotal.minus(oldTotal);
+
+      if (!diff.isZero()) {
+        if (transaction.type === "buy") {
+          // Buy: more shares/higher price means more deducted from account
+          await tx.account.update({
+            where: { id: transaction.accountId },
+            data: { balance: { decrement: Math.round(diff.toNumber()) } },
+          });
+        } else if (transaction.type === "sell") {
+          // Sell: more shares/higher price means more added to account
+          await tx.account.update({
+            where: { id: transaction.accountId },
+            data: { balance: { increment: Math.round(diff.toNumber()) } },
+          });
+        }
+      }
+    }
+
+    return await tx.stockTransaction.update({
+      where: { id: transactionId },
+      data: updateData,
+      select: {
+        id: true,
+        userId: true,
+        type: true,
+        company: true,
+        shares: true,
+        pricePerShare: true,
+        currency: true,
+        date: true,
+        note: true,
+        realizedGain: true,
+        accountId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   });
 
   return serializeStockTransaction(updated);
@@ -316,12 +360,12 @@ export async function deleteStockTransaction(
       if (transaction.type === "buy") {
         await tx.account.update({
           where: { id: transaction.accountId },
-          data: { balance: { increment: total.toNumber() } },
+          data: { balance: { increment: Math.round(total.toNumber()) } },
         });
       } else if (transaction.type === "sell") {
         await tx.account.update({
           where: { id: transaction.accountId },
-          data: { balance: { decrement: total.toNumber() } },
+          data: { balance: { decrement: Math.round(total.toNumber()) } },
         });
       }
     }
@@ -362,6 +406,7 @@ export async function getPortfolio(userId: string) {
       holdings[tx.company].sells.push({
         shares: tx.shares,
         pricePerShare: tx.pricePerShare,
+        realizedGain: tx.realizedGain,
       });
     }
   }
@@ -383,16 +428,13 @@ export async function getPortfolio(userId: string) {
         (sum: Decimal, b: any) => sum.plus(b.shares.times(b.pricePerShare)),
         new Decimal(0)
       );
-      const totalSellValue = data.sells.reduce(
-        (sum: Decimal, s: any) => sum.plus(s.shares.times(s.pricePerShare)),
-        new Decimal(0)
-      );
-      const totalInvested = totalBuyValue.minus(totalSellValue);
 
       const averageCostPerShare =
         totalBuyShares.greaterThan(0)
           ? totalBuyValue.dividedBy(totalBuyShares)
           : new Decimal(0);
+
+      const totalInvested = totalShares.times(averageCostPerShare);
 
       return {
         company,
@@ -403,7 +445,7 @@ export async function getPortfolio(userId: string) {
         totalRealizedGain: data.sells
           .reduce(
             (sum: Decimal, s: any) =>
-              sum.plus(s.shares.times(s.pricePerShare.minus(averageCostPerShare))),
+              sum.plus(s.realizedGain || new Decimal(0)),
             new Decimal(0)
           )
           .toString(),

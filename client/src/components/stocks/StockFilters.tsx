@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { StockTransactionFilters } from '../../types/stock';
 
 interface StockFiltersProps {
@@ -9,12 +10,29 @@ export function StockFilters({
   filters,
   onFilterChange,
 }: StockFiltersProps) {
+  const [companyInput, setCompanyInput] = useState(filters.company || '');
+
+  // Sync companyInput when filters.company changes from outside
+  useEffect(() => {
+    setCompanyInput(filters.company || '');
+  }, [filters.company]);
+
+  // Debounce company input changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (companyInput !== filters.company) {
+        onFilterChange({
+          ...filters,
+          company: companyInput || undefined,
+          page: 1,
+        });
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [companyInput]);
+
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({
-      ...filters,
-      company: e.target.value || undefined,
-      page: 1,
-    });
+    setCompanyInput(e.target.value);
   };
 
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,7 +82,7 @@ export function StockFilters({
             <input
               type="text"
               placeholder="Filter by company"
-              value={filters.company || ''}
+              value={companyInput}
               onChange={handleCompanyChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-transparent text-sm"
             />

@@ -1,4 +1,5 @@
 import type { StockHolding } from '../../types/stock';
+import { formatShares, formatPrice, formatCurrency } from '../../utils/formatters';
 
 interface StockPortfolioCardProps {
   holding: StockHolding;
@@ -8,17 +9,6 @@ export function StockPortfolioCard({ holding }: StockPortfolioCardProps) {
   const totalValue = parseFloat(holding.totalInvested);
   const shares = parseFloat(holding.totalShares);
   const avgCost = parseFloat(holding.averageCostPerShare);
-
-  // Format numbers
-  const formatNumber = (num: number, decimals = 2) => {
-    return num.toFixed(decimals);
-  };
-
-  const formatShares = (num: number) => {
-    // Strip trailing zeros for shares display
-    const formatted = num.toFixed(8);
-    return formatted.replace(/\.?0+$/, '');
-  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
@@ -42,7 +32,7 @@ export function StockPortfolioCard({ holding }: StockPortfolioCardProps) {
             Avg Cost
           </p>
           <p className="text-lg font-semibold text-gray-900">
-            {holding.currency} {formatNumber(avgCost)}
+            {formatPrice(avgCost)} {holding.currency}
           </p>
         </div>
 
@@ -51,7 +41,7 @@ export function StockPortfolioCard({ holding }: StockPortfolioCardProps) {
             Total Invested
           </p>
           <p className="text-lg font-semibold text-gray-900">
-            {holding.currency} {formatNumber(totalValue)}
+            {formatCurrency(totalValue, holding.currency)}
           </p>
         </div>
 
@@ -62,7 +52,7 @@ export function StockPortfolioCard({ holding }: StockPortfolioCardProps) {
           <p className={`text-lg font-semibold ${
             parseFloat(holding.totalRealizedGain) >= 0 ? 'text-green-600' : 'text-red-600'
           }`}>
-            {holding.currency} {formatNumber(parseFloat(holding.totalRealizedGain))}
+            {formatCurrency(parseFloat(holding.totalRealizedGain), holding.currency)}
           </p>
         </div>
       </div>

@@ -21,6 +21,7 @@ export default function StocksPage() {
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [isDeletingTransaction, setIsDeletingTransaction] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -50,6 +51,7 @@ export default function StocksPage() {
   const loadPortfolio = async () => {
     try {
       setIsLoadingPortfolio(true);
+      setError(null);
       const result = await stocksApi.portfolio();
       setPortfolio(result);
     } catch (err: any) {
@@ -62,6 +64,7 @@ export default function StocksPage() {
   const loadTransactions = async (currentFilters: StockTransactionFilters = filters) => {
     try {
       setIsLoadingTransactions(true);
+      setError(null);
       const result = await stocksApi.list(currentFilters);
       setTransactions(result);
     } catch (err: any) {
@@ -85,6 +88,8 @@ export default function StocksPage() {
   const handleFormSubmit = async (data: CreateStockTransactionInput) => {
     try {
       setSubmitError(null);
+      setError(null);
+      setIsSubmittingForm(true);
       if (editingTransaction) {
         // Edit mode
         await stocksApi.update(editingTransaction.id, data);
@@ -92,12 +97,16 @@ export default function StocksPage() {
         // Create mode
         await stocksApi.create(data);
       }
+      // Only close form on success
       setIsFormOpen(false);
       setEditingTransaction(null);
       // Refresh both portfolio and transactions after transaction change
       await Promise.all([loadPortfolio(), loadTransactions(filters)]);
     } catch (err: any) {
       setSubmitError(err.error || 'Failed to save transaction');
+      throw err; // Re-throw so modal knows it failed
+    } finally {
+      setIsSubmittingForm(false);
     }
   };
 
@@ -154,8 +163,14 @@ export default function StocksPage() {
         </div>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {error}
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center justify-between">
+            <span>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="ml-4 text-red-500 hover:text-red-700 font-bold"
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -237,7 +252,7 @@ export default function StocksPage() {
         accounts={accounts}
         editingTransaction={editingTransaction}
         error={submitError || undefined}
-        isLoading={false}
+        isLoading={isSubmittingForm}
         initialType={formType}
       />
 
@@ -245,7 +260,7 @@ export default function StocksPage() {
       <DeleteStockTransactionDialog
         isOpen={!!deleteTarget}
         isLoading={isDeletingTransaction}
-        company={deleteTarget?.company}
+        transaction={deleteTarget}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
       />
