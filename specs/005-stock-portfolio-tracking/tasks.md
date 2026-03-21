@@ -108,12 +108,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] Implement `listStockTransactions` in `server/src/services/stock.service.ts` — paginated list with filters (company, type, dateFrom, dateTo), ordered by date DESC then createdAt DESC. Include account relation. Return pagination metadata
-- [ ] T026 [US4] Wire up `listStockTransactionsHandler` in `server/src/controllers/stock.controller.ts`
-- [ ] T027 [P] [US4] Create `client/src/components/stocks/StockTransactionItem.tsx` — display single transaction row: type badge (buy/sell), company, shares, price, total value, date, realized gain (for sells), linked account name
-- [ ] T028 [P] [US4] Create `client/src/components/stocks/StockFilters.tsx` — filter controls: company text input, type dropdown (all/buy/sell), date range pickers
-- [ ] T029 [P] [US4] Create `client/src/components/stocks/StockTransactionList.tsx` — render list of StockTransactionItem, pagination controls, empty state
-- [ ] T030 [US4] Integrate transaction history into `client/src/pages/StocksPage.tsx` — add history section below portfolio, wire up filters and pagination, fetch from `stocksApi.list`
+- [X] T025 [US4] Implement `listStockTransactions` in `server/src/services/stock.service.ts` — paginated list with filters (company, type, dateFrom, dateTo), ordered by date DESC then createdAt DESC. Include account relation. Return pagination metadata
+- [X] T026 [US4] Wire up `listStockTransactionsHandler` in `server/src/controllers/stock.controller.ts`
+- [X] T027 [P] [US4] Create `client/src/components/stocks/StockTransactionItem.tsx` — display single transaction row: type badge (buy/sell), company, shares, price, total value, date, realized gain (for sells), linked account name
+- [X] T028 [P] [US4] Create `client/src/components/stocks/StockFilters.tsx` — filter controls: company text input, type dropdown (all/buy/sell), date range pickers
+- [X] T029 [P] [US4] Create `client/src/components/stocks/StockTransactionList.tsx` — render list of StockTransactionItem, pagination controls, empty state
+- [X] T030 [US4] Integrate transaction history into `client/src/pages/StocksPage.tsx` — add history section below portfolio, wire up filters and pagination, fetch from `stocksApi.list`
 
 **Checkpoint**: Transaction history shows all stock transactions with working filters and pagination. Buy/sell types are visually distinguished.
 

@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { stocksApi, accountsApi } from '../services/api';
 import type { Account } from '../types/account';
-import type { CreateStockTransactionInput, PortfolioResponse } from '../types/stock';
+import type { CreateStockTransactionInput, PortfolioResponse, StockTransactionFilters, StockTransactionListResponse } from '../types/stock';
 import { StockTransactionFormModal } from '../components/stocks/StockTransactionFormModal';
 import { StockPortfolioList } from '../components/stocks/StockPortfolioList';
+import { StockTransactionList } from '../components/stocks/StockTransactionList';
+import { StockFilters } from '../components/stocks/StockFilters';
 
 export default function StocksPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formType, setFormType] = useState<'buy' | 'sell'>('buy');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
+  const [transactions, setTransactions] = useState<StockTransactionListResponse | null>(null);
+  const [filters, setFilters] = useState<StockTransactionFilters>({ page: 1, limit: 20 });
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -20,12 +25,14 @@ export default function StocksPage() {
     async function loadData() {
       try {
         setIsLoading(true);
-        const [accountsResult, portfolioResult] = await Promise.all([
+        const [accountsResult, portfolioResult, transactionsResult] = await Promise.all([
           accountsApi.list(),
           stocksApi.portfolio(),
+          stocksApi.list(filters),
         ]);
         setAccounts(accountsResult.accounts);
         setPortfolio(portfolioResult);
+        setTransactions(transactionsResult);
       } catch (err: any) {
         setError(err.error || 'Failed to load data');
       } finally {
@@ -48,13 +55,36 @@ export default function StocksPage() {
     }
   };
 
+  const loadTransactions = async (currentFilters: StockTransactionFilters = filters) => {
+    try {
+      setIsLoadingTransactions(true);
+      const result = await stocksApi.list(currentFilters);
+      setTransactions(result);
+    } catch (err: any) {
+      setError(err.error || 'Failed to load transactions');
+    } finally {
+      setIsLoadingTransactions(false);
+    }
+  };
+
+  const handleFilterChange = (newFilters: StockTransactionFilters) => {
+    setFilters(newFilters);
+    loadTransactions(newFilters);
+  };
+
+  const handlePageChange = (page: number) => {
+    const newFilters = { ...filters, page };
+    setFilters(newFilters);
+    loadTransactions(newFilters);
+  };
+
   const handleFormSubmit = async (data: CreateStockTransactionInput) => {
     try {
       setSubmitError(null);
       await stocksApi.create(data);
       setIsFormOpen(false);
-      // Refresh portfolio after adding transaction
-      await loadPortfolio();
+      // Refresh both portfolio and transactions after adding transaction
+      await Promise.all([loadPortfolio(), loadTransactions(filters)]);
     } catch (err: any) {
       setSubmitError(err.error || 'Failed to save transaction');
     }
@@ -144,9 +174,16 @@ export default function StocksPage() {
         {/* Transaction History Section */}
         <section>
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Transaction History</h2>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-500">Transaction history coming soon...</p>
-          </div>
+
+          {/* Filters */}
+          <StockFilters filters={filters} onFilterChange={handleFilterChange} />
+
+          {/* Transaction List */}
+          <StockTransactionList
+            data={transactions}
+            isLoading={isLoadingTransactions}
+            onPageChange={handlePageChange}
+          />
         </section>
       </div>
 
