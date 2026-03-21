@@ -12,6 +12,7 @@ import { AccountsPage } from './pages/AccountsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import StocksPage from './pages/StocksPage';
 
 function AppRoutes() {
   return (
@@ -46,6 +47,7 @@ function AppRoutes() {
                 <Route path="/transactions" element={<TransactionsPage />} />
                 <Route path="/accounts" element={<AccountsPage />} />
                 <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/stocks" element={<StocksPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 {/* Default redirect */}

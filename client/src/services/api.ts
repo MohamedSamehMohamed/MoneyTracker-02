@@ -1,5 +1,6 @@
 import type { Account, CreateAccountInput, UpdateAccountInput } from '../types/account';
 import type { Transaction, CreateTransactionInput, UpdateTransactionInput, TransactionFilters, Category, TransactionListResponse } from '../types/transaction';
+import type { StockTransaction, CreateStockTransactionInput, UpdateStockTransactionInput, StockTransactionFilters, StockTransactionListResponse, PortfolioResponse } from '../types/stock';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -140,4 +141,47 @@ export const categoriesApi = {
       method: "GET",
     });
   },
+};
+
+export const stocksApi = {
+  list: (filters?: StockTransactionFilters) => {
+    const params = new URLSearchParams();
+    if (filters?.page !== undefined) params.append("page", filters.page.toString());
+    if (filters?.limit !== undefined) params.append("limit", filters.limit.toString());
+    if (filters?.company !== undefined) params.append("company", filters.company);
+    if (filters?.type !== undefined) params.append("type", filters.type);
+    if (filters?.dateFrom !== undefined) params.append("dateFrom", filters.dateFrom);
+    if (filters?.dateTo !== undefined) params.append("dateTo", filters.dateTo);
+
+    const query = params.toString();
+    const endpoint = query ? `/stocks?${query}` : "/stocks";
+    return apiFetch<StockTransactionListResponse>(endpoint, { method: "GET" });
+  },
+
+  get: (id: string) =>
+    apiFetch<{ transaction: StockTransaction }>(`/stocks/${id}`, {
+      method: "GET",
+    }),
+
+  create: (data: CreateStockTransactionInput) =>
+    apiFetch<{ transaction: StockTransaction }>("/stocks", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: UpdateStockTransactionInput) =>
+    apiFetch<{ transaction: StockTransaction }>(`/stocks/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/stocks/${id}`, {
+      method: "DELETE",
+    }),
+
+  portfolio: () =>
+    apiFetch<PortfolioResponse>("/stocks/portfolio", {
+      method: "GET",
+    }),
 };

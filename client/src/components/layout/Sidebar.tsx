@@ -43,6 +43,12 @@ export function Sidebar() {
           Categories
         </Link>
         <Link
+          to="/stocks"
+          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
+        >
+          Stocks
+        </Link>
+        <Link
           to="/reports"
           className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition"
         >
