@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { stocksApi, accountsApi } from '../services/api';
 import type { Account } from '../types/account';
-import type { CreateStockTransactionInput, PortfolioResponse, StockTransactionFilters, StockTransactionListResponse } from '../types/stock';
+import type { CreateStockTransactionInput, PortfolioResponse, StockTransactionFilters, StockTransactionListResponse, StockTransaction } from '../types/stock';
 import { StockTransactionFormModal } from '../components/stocks/StockTransactionFormModal';
 import { StockPortfolioList } from '../components/stocks/StockPortfolioList';
 import { StockTransactionList } from '../components/stocks/StockTransactionList';
 import { StockFilters } from '../components/stocks/StockFilters';
+import { DeleteStockTransactionDialog } from '../components/stocks/DeleteStockTransactionDialog';
 
 export default function StocksPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formType, setFormType] = useState<'buy' | 'sell'>('buy');
+  const [editingTransaction, setEditingTransaction] = useState<StockTransaction | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<StockTransaction | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioResponse | null>(null);
   const [transactions, setTransactions] = useState<StockTransactionListResponse | null>(null);
@@ -17,6 +20,7 @@ export default function StocksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(false);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
+  const [isDeletingTransaction, setIsDeletingTransaction] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -81,12 +85,44 @@ export default function StocksPage() {
   const handleFormSubmit = async (data: CreateStockTransactionInput) => {
     try {
       setSubmitError(null);
-      await stocksApi.create(data);
+      if (editingTransaction) {
+        // Edit mode
+        await stocksApi.update(editingTransaction.id, data);
+      } else {
+        // Create mode
+        await stocksApi.create(data);
+      }
       setIsFormOpen(false);
-      // Refresh both portfolio and transactions after adding transaction
+      setEditingTransaction(null);
+      // Refresh both portfolio and transactions after transaction change
       await Promise.all([loadPortfolio(), loadTransactions(filters)]);
     } catch (err: any) {
       setSubmitError(err.error || 'Failed to save transaction');
+    }
+  };
+
+  const handleEdit = (transaction: StockTransaction) => {
+    setEditingTransaction(transaction);
+    setFormType(transaction.type as 'buy' | 'sell');
+    setIsFormOpen(true);
+  };
+
+  const handleDeleteClick = (transaction: StockTransaction) => {
+    setDeleteTarget(transaction);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    try {
+      setIsDeletingTransaction(true);
+      await stocksApi.delete(deleteTarget.id);
+      setDeleteTarget(null);
+      // Refresh both portfolio and transactions after deletion
+      await Promise.all([loadPortfolio(), loadTransactions(filters)]);
+    } catch (err: any) {
+      setError(err.error || 'Failed to delete transaction');
+    } finally {
+      setIsDeletingTransaction(false);
     }
   };
 
@@ -183,6 +219,8 @@ export default function StocksPage() {
             data={transactions}
             isLoading={isLoadingTransactions}
             onPageChange={handlePageChange}
+            onEdit={handleEdit}
+            onDelete={handleDeleteClick}
           />
         </section>
       </div>
@@ -192,13 +230,24 @@ export default function StocksPage() {
         isOpen={isFormOpen}
         onClose={() => {
           setIsFormOpen(false);
+          setEditingTransaction(null);
           setSubmitError(null);
         }}
         onSubmit={handleFormSubmit}
         accounts={accounts}
+        editingTransaction={editingTransaction}
         error={submitError || undefined}
         isLoading={false}
         initialType={formType}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteStockTransactionDialog
+        isOpen={!!deleteTarget}
+        isLoading={isDeletingTransaction}
+        company={deleteTarget?.company}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
       />
     </div>
   );

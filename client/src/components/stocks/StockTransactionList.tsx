@@ -6,7 +6,7 @@ interface StockTransactionListProps {
   isLoading?: boolean;
   onPageChange: (page: number) => void;
   onEdit?: (transaction: StockTransaction) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (transaction: StockTransaction) => void;
 }
 
 export function StockTransactionList({

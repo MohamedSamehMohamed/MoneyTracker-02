@@ -115,7 +115,7 @@ export function StockTransactionFormModal({
       <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 max-h-screen overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            {editingTransaction ? 'Edit' : 'New'} Stock Transaction
+            {editingTransaction ? 'Edit Stock Transaction' : 'New Stock Transaction'}
           </h2>
 
           {serverError && (

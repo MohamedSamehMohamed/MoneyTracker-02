@@ -3,7 +3,7 @@ import type { StockTransaction } from '../../types/stock';
 interface StockTransactionItemProps {
   transaction: StockTransaction;
   onEdit?: (transaction: StockTransaction) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (transaction: StockTransaction) => void;
 }
 
 export function StockTransactionItem({
@@ -46,9 +46,16 @@ export function StockTransactionItem({
           {/* Company & Details */}
           <div className="flex-1">
             <p className="font-medium text-gray-900">{transaction.company}</p>
-            <p className="text-sm text-gray-500">
-              {formatShares(shares)} @ {transaction.currency} {formatNumber(price)}
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm text-gray-500">
+                {formatShares(shares)} @ {transaction.currency} {formatNumber(price)}
+              </p>
+              {transaction.accountId && (
+                <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">
+                  Linked account
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -72,15 +79,15 @@ export function StockTransactionItem({
           {onEdit && (
             <button
               onClick={() => onEdit(transaction)}
-              className="text-sm text-blue-600 hover:text-blue-700 px-2 py-1"
+              className="text-sm text-blue-600 hover:text-blue-700 px-2 py-1 font-medium"
             >
               Edit
             </button>
           )}
           {onDelete && (
             <button
-              onClick={() => onDelete(transaction.id)}
-              className="text-sm text-red-600 hover:text-red-700 px-2 py-1"
+              onClick={() => onDelete(transaction)}
+              className="text-sm text-red-600 hover:text-red-700 px-2 py-1 font-medium"
             >
               Delete
             </button>

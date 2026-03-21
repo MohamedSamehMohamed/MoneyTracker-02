@@ -127,9 +127,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T031 [US5] Add account linking logic to `createStockTransaction` in `server/src/services/stock.service.ts` — when accountId provided: validate account exists and belongs to user, validate currency match between stock transaction and account, compute balance adjustment (shares * pricePerShare * 100 for 2-decimal currencies), decrement on buy / increment on sell, all within prisma.$transaction
-- [ ] T032 [US5] Update `client/src/components/stocks/StockTransactionFormModal.tsx` — add optional account selector dropdown (fetch user's accounts, filter by matching currency), show "Link to account" toggle or optional dropdown
-- [ ] T033 [US5] Display linked account name in `client/src/components/stocks/StockTransactionItem.tsx` — show account badge/name when transaction has a linked account
+- [X] T031 [US5] Add account linking logic to `createStockTransaction` in `server/src/services/stock.service.ts` — when accountId provided: validate account exists and belongs to user, validate currency match between stock transaction and account, compute balance adjustment (shares * pricePerShare * 100 for 2-decimal currencies), decrement on buy / increment on sell, all within prisma.$transaction
+- [X] T032 [US5] Update `client/src/components/stocks/StockTransactionFormModal.tsx` — add optional account selector dropdown (fetch user's accounts, filter by matching currency), show "Link to account" toggle or optional dropdown
+- [X] T033 [US5] Display linked account name in `client/src/components/stocks/StockTransactionItem.tsx` — show account badge/name when transaction has a linked account
 
 **Checkpoint**: Stock purchases with linked account correctly deduct from account balance. Sales with linked account add to balance. Transactions without linked account work unchanged.
 
@@ -139,13 +139,13 @@
 
 **Purpose**: Complete CRUD operations for stock transactions
 
-- [ ] T034 [US4] Implement `updateStockTransaction` in `server/src/services/stock.service.ts` — allow editing shares, pricePerShare, note, date (company and type locked). Recalculate linked account balance adjustment if shares/price changed. For sell edits: re-validate that new share count doesn't exceed held shares
-- [ ] T035 [US4] Implement `deleteStockTransaction` in `server/src/services/stock.service.ts` — reverse linked account balance if present, delete record. For buy deletes: warn/allow even if it would make net shares negative (user's responsibility)
-- [ ] T036 [US4] Wire up `updateStockTransactionHandler` and `deleteStockTransactionHandler` in `server/src/controllers/stock.controller.ts`
-- [ ] T037 [P] Create `client/src/components/stocks/DeleteStockTransactionDialog.tsx` — confirmation dialog before delete, following pattern from `client/src/components/transactions/DeleteTransactionDialog.tsx`
-- [ ] T038 Update `client/src/components/stocks/StockTransactionItem.tsx` — add edit and delete action buttons
-- [ ] T039 Update `client/src/components/stocks/StockTransactionFormModal.tsx` — support edit mode (pre-fill form, disable company and type fields, call `stocksApi.update` on submit)
-- [ ] T040 Wire up edit/delete actions in `client/src/pages/StocksPage.tsx` — open form modal in edit mode, open delete dialog, refresh list and portfolio after changes
+- [X] T034 [US4] Implement `updateStockTransaction` in `server/src/services/stock.service.ts` — allow editing shares, pricePerShare, note, date (company and type locked). Recalculate linked account balance adjustment if shares/price changed. For sell edits: re-validate that new share count doesn't exceed held shares
+- [X] T035 [US4] Implement `deleteStockTransaction` in `server/src/services/stock.service.ts` — reverse linked account balance if present, delete record. For buy deletes: warn/allow even if it would make net shares negative (user's responsibility)
+- [X] T036 [US4] Wire up `updateStockTransactionHandler` and `deleteStockTransactionHandler` in `server/src/controllers/stock.controller.ts`
+- [X] T037 [P] Create `client/src/components/stocks/DeleteStockTransactionDialog.tsx` — confirmation dialog before delete, following pattern from `client/src/components/transactions/DeleteTransactionDialog.tsx`
+- [X] T038 Update `client/src/components/stocks/StockTransactionItem.tsx` — add edit and delete action buttons
+- [X] T039 Update `client/src/components/stocks/StockTransactionFormModal.tsx` — support edit mode (pre-fill form, disable company and type fields, call `stocksApi.update` on submit)
+- [X] T040 Wire up edit/delete actions in `client/src/pages/StocksPage.tsx` — open form modal in edit mode, open delete dialog, refresh list and portfolio after changes
 
 **Checkpoint**: All CRUD operations work correctly. Editing recalculates balances. Delete reverses balance effects and shows confirmation.
 
@@ -155,10 +155,10 @@
 
 **Purpose**: Final quality improvements across all user stories
 
-- [ ] T041 [P] Add loading states and error boundaries to `client/src/pages/StocksPage.tsx` — loading spinners for portfolio and history sections, error messages for failed API calls
-- [ ] T042 [P] Add number formatting utility for stock amounts in `client/src/utils/formatters.ts` — format shares (up to 8 decimal places, strip trailing zeros) and prices (2 decimal places with currency symbol)
-- [ ] T043 Apply formatting utility across stock components (`StockPortfolioCard.tsx`, `StockTransactionItem.tsx`, `StockTransactionFormModal.tsx`)
-- [ ] T044 Verify all API error responses return consistent format and user-friendly messages in `server/src/services/stock.service.ts`
+- [X] T041 [P] Add loading states and error boundaries to `client/src/pages/StocksPage.tsx` — loading spinners for portfolio and history sections, error messages for failed API calls
+- [X] T042 [P] Add number formatting utility for stock amounts in `client/src/utils/formatters.ts` — format shares (up to 8 decimal places, strip trailing zeros) and prices (2 decimal places with currency symbol)
+- [X] T043 Apply formatting utility across stock components (`StockPortfolioCard.tsx`, `StockTransactionItem.tsx`, `StockTransactionFormModal.tsx`)
+- [X] T044 Verify all API error responses return consistent format and user-friendly messages in `server/src/services/stock.service.ts`
 
 ---
 
