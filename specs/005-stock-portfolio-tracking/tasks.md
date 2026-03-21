@@ -73,11 +73,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement `getPortfolio` in `server/src/services/stock.service.ts` — aggregate StockTransactions by (userId, company): compute totalShares, averageCostPerShare, totalInvested, totalRealizedGain. Exclude companies with totalShares <= 0. Use Prisma groupBy or raw SQL
-- [ ] T017 [US2] Wire up `portfolioHandler` in `server/src/controllers/stock.controller.ts`
-- [ ] T018 [P] [US2] Create `client/src/components/stocks/StockPortfolioCard.tsx` — display single holding: company name, total shares, avg cost, total invested, currency
-- [ ] T019 [P] [US2] Create `client/src/components/stocks/StockPortfolioList.tsx` — render list of StockPortfolioCard components, handle empty state with prompt to record first purchase
-- [ ] T020 [US2] Integrate portfolio view into `client/src/pages/StocksPage.tsx` — fetch from `stocksApi.portfolio` on mount, display StockPortfolioList at the top of the page
+- [X] T016 [US2] Implement `getPortfolio` in `server/src/services/stock.service.ts` — aggregate StockTransactions by (userId, company): compute totalShares, averageCostPerShare, totalInvested, totalRealizedGain. Exclude companies with totalShares <= 0. Use Prisma groupBy or raw SQL
+- [X] T017 [US2] Wire up `portfolioHandler` in `server/src/controllers/stock.controller.ts`
+- [X] T018 [P] [US2] Create `client/src/components/stocks/StockPortfolioCard.tsx` — display single holding: company name, total shares, avg cost, total invested, currency
+- [X] T019 [P] [US2] Create `client/src/components/stocks/StockPortfolioList.tsx` — render list of StockPortfolioCard components, handle empty state with prompt to record first purchase
+- [X] T020 [US2] Integrate portfolio view into `client/src/pages/StocksPage.tsx` — fetch from `stocksApi.portfolio` on mount, display StockPortfolioList at the top of the page
 
 **Checkpoint**: Portfolio section shows aggregated holdings. Multiple purchases of same company show correct average cost. Empty state displays when no holdings exist.
 
@@ -91,10 +91,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Add sell logic to `createStockTransaction` in `server/src/services/stock.service.ts` — for type=sell: calculate net shares held for company (inside prisma.$transaction), reject if sell exceeds held shares, compute realizedGain = shares * (sellPrice - avgCost), store on record
-- [ ] T022 [US3] Add currency consistency validation to `createStockTransaction` in `server/src/services/stock.service.ts` — before creating any transaction, check that currency matches existing transactions for (userId, company). Return 400 if mismatch
-- [ ] T023 [US3] Update `client/src/components/stocks/StockTransactionFormModal.tsx` — enable sell mode in the type selector, show current holdings for the selected company (to help user know max shares available)
-- [ ] T024 [US3] Update `client/src/pages/StocksPage.tsx` — add "Record Sale" action (can reuse form modal with type=sell), refresh portfolio after sale
+- [X] T021 [US3] Add sell logic to `createStockTransaction` in `server/src/services/stock.service.ts` — for type=sell: calculate net shares held for company (inside prisma.$transaction), reject if sell exceeds held shares, compute realizedGain = shares * (sellPrice - avgCost), store on record
+- [X] T022 [US3] Add currency consistency validation to `createStockTransaction` in `server/src/services/stock.service.ts` — before creating any transaction, check that currency matches existing transactions for (userId, company). Return 400 if mismatch
+- [X] T023 [US3] Update `client/src/components/stocks/StockTransactionFormModal.tsx` — enable sell mode in the type selector, show current holdings for the selected company (to help user know max shares available)
+- [X] T024 [US3] Update `client/src/pages/StocksPage.tsx` — add "Record Sale" action (can reuse form modal with type=sell), refresh portfolio after sale
 
 **Checkpoint**: Selling shares updates portfolio correctly. Oversell attempt shows error. Realized gain/loss displays on sell transactions.
 

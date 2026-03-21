@@ -38,6 +38,7 @@ interface StockTransactionFormModalProps {
   editingTransaction?: StockTransaction | null;
   isLoading?: boolean;
   error?: string;
+  initialType?: 'buy' | 'sell';
 }
 
 export function StockTransactionFormModal({
@@ -48,6 +49,7 @@ export function StockTransactionFormModal({
   editingTransaction,
   isLoading = false,
   error: serverError,
+  initialType = 'buy',
 }: StockTransactionFormModalProps) {
   const {
     register,
@@ -58,7 +60,7 @@ export function StockTransactionFormModal({
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: 'buy',
+      type: initialType,
       date: new Date().toISOString().split('T')[0],
     },
   });
@@ -79,11 +81,11 @@ export function StockTransactionFormModal({
       });
     } else {
       reset({
-        type: 'buy',
+        type: initialType,
         date: new Date().toISOString().split('T')[0],
       });
     }
-  }, [editingTransaction, reset, isOpen]);
+  }, [editingTransaction, reset, isOpen, initialType]);
 
   const filteredAccounts = accounts.filter((acc) => acc.currency === selectedCurrency || !selectedCurrency);
 
