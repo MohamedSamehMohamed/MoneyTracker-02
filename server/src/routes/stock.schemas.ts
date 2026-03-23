@@ -62,6 +62,16 @@ export const listStockTransactionsSchema = z.object({
   dateTo: z.string().regex(dateRegex, "Date must be in YYYY-MM-DD format").optional(),
 });
 
+export const setCurrentPriceSchema = z.object({
+  company: z.string().min(1).max(100),
+  price: z
+    .union([z.string(), z.number()])
+    .pipe(z.coerce.string())
+    .pipe(positiveNumberString),
+  currency: z.string().min(1).max(10),
+});
+
 export type CreateStockTransactionInput = z.infer<typeof createStockTransactionSchema>;
 export type UpdateStockTransactionInput = z.infer<typeof updateStockTransactionSchema>;
 export type ListStockTransactionsQuery = z.infer<typeof listStockTransactionsSchema>;
+export type SetCurrentPriceInput = z.infer<typeof setCurrentPriceSchema>;

@@ -196,6 +196,7 @@ export default function StocksPage() {
                 <StockPortfolioList
                   holdings={portfolio?.holdings || []}
                   isLoading={isLoadingPortfolio}
+                  onPriceUpdate={loadPortfolio}
                 />
 
                 {portfolio && portfolio.holdings.length > 0 && (

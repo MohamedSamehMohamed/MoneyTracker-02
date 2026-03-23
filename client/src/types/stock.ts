@@ -26,6 +26,9 @@ export interface StockHolding {
   totalInvested: string; // Decimal as string
   averageCostPerShare: string; // Decimal as string
   totalRealizedGain: string; // Decimal as string
+  currentPrice?: string; // Decimal as string
+  currentMarketValue?: string; // Decimal as string
+  unrealizedGain?: string; // Decimal as string
 }
 
 export interface CreateStockTransactionInput {

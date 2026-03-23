@@ -6,6 +6,7 @@ import {
   updateHandler,
   deleteHandler,
   portfolioHandler,
+  setCurrentPriceHandler,
 } from "../controllers/stock.controller";
 import { validateMiddleware } from "../middleware/validate.middleware";
 import { authMiddleware } from "../middleware/auth.middleware";
@@ -13,6 +14,7 @@ import {
   createStockTransactionSchema,
   updateStockTransactionSchema,
   listStockTransactionsSchema,
+  setCurrentPriceSchema,
 } from "./stock.schemas";
 
 const router = Router();
@@ -27,6 +29,14 @@ router.get(
 
 // GET /api/stocks/portfolio
 router.get("/portfolio", authMiddleware, portfolioHandler);
+
+// PUT /api/stocks/current-price
+router.put(
+  "/current-price",
+  authMiddleware,
+  validateMiddleware(setCurrentPriceSchema),
+  setCurrentPriceHandler
+);
 
 // GET /api/stocks/:id
 router.get("/:id", authMiddleware, getHandler);

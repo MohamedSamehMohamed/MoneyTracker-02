@@ -4,11 +4,13 @@ import { StockPortfolioCard } from './StockPortfolioCard';
 interface StockPortfolioListProps {
   holdings: StockHolding[];
   isLoading?: boolean;
+  onPriceUpdate?: () => void;
 }
 
 export function StockPortfolioList({
   holdings,
   isLoading = false,
+  onPriceUpdate,
 }: StockPortfolioListProps) {
   if (isLoading) {
     return (
@@ -32,7 +34,11 @@ export function StockPortfolioList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {holdings.map((holding) => (
-        <StockPortfolioCard key={`${holding.company}-${holding.currency}`} holding={holding} />
+        <StockPortfolioCard
+          key={`${holding.company}-${holding.currency}`}
+          holding={holding}
+          onPriceUpdate={onPriceUpdate}
+        />
       ))}
     </div>
   );

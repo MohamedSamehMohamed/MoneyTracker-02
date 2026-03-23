@@ -39,7 +39,7 @@ export function StockTransactionItem({
             <p className="font-medium text-gray-900">{transaction.company}</p>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-sm text-gray-500">
-                {formatShares(shares)} @ {transaction.currency} {formatPrice(price)}
+                {formatShares(shares)} {transaction.company.toLowerCase() === 'gold' ? 'g' : 'units'} @ {transaction.currency} {formatPrice(price)}/{transaction.company.toLowerCase() === 'gold' ? 'g' : 'unit'}
               </p>
               {transaction.account && (
                 <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded">

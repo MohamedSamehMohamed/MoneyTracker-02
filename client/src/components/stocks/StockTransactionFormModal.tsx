@@ -152,10 +152,10 @@ export function StockTransactionFormModal({
               )}
             </div>
 
-            {/* Shares */}
+            {/* Quantity */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Shares
+                Quantity (shares/grams/units)
               </label>
               <input
                 {...register('shares')}
@@ -164,15 +164,18 @@ export function StockTransactionFormModal({
                 placeholder="0.00"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-transparent"
               />
+              <p className="mt-1 text-xs text-gray-500">
+                For stocks: number of shares. For gold/commodities: weight in grams.
+              </p>
               {errors.shares && (
                 <p className="mt-1 text-sm text-red-600">{errors.shares.message}</p>
               )}
             </div>
 
-            {/* Price Per Share */}
+            {/* Price Per Unit */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price Per Share
+                Price Per Unit
               </label>
               <input
                 {...register('pricePerShare')}
@@ -181,6 +184,9 @@ export function StockTransactionFormModal({
                 placeholder="0.00"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-transparent"
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Price per share (stocks) or price per gram (gold/commodities) in the selected currency.
+              </p>
               {errors.pricePerShare && (
                 <p className="mt-1 text-sm text-red-600">{errors.pricePerShare.message}</p>
               )}

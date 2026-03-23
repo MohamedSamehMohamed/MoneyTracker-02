@@ -29,6 +29,7 @@ model User {
   transactions    Transaction[]
   categories      Category[]
   stockTransactions StockTransaction[]
+  stockCurrentPrices StockCurrentPrice[]
 
   @@map("users")
 }
@@ -129,6 +130,22 @@ model StockTransaction {
   @@index([userId, company])
   @@index([userId, date(sort: Desc)])
   @@map("stock_transactions")
+}
+
+// StockCurrentPrice model
+model StockCurrentPrice {
+  id        String   @id @default(uuid())
+  userId    String
+  company   String   @db.VarChar(100)
+  price     Decimal  @db.Decimal(18, 2)
+  currency  String   @db.VarChar(10)
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, company])
+  @@map("stock_current_prices")
 }
 
 // Enums

@@ -6,11 +6,13 @@ import {
   updateStockTransaction,
   deleteStockTransaction,
   getPortfolio,
+  upsertCurrentPrice,
 } from "../services/stock.service";
 import {
   CreateStockTransactionInput,
   UpdateStockTransactionInput,
   ListStockTransactionsQuery,
+  SetCurrentPriceInput,
 } from "../routes/stock.schemas";
 
 export async function createHandler(
@@ -131,6 +133,28 @@ export async function portfolioHandler(
     }
     const portfolio = await getPortfolio(req.userId);
     return res.status(200).json(portfolio);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function setCurrentPriceHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    const input = req.body as SetCurrentPriceInput;
+    const result = await upsertCurrentPrice(
+      req.userId,
+      input.company,
+      input.price,
+      input.currency
+    );
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }

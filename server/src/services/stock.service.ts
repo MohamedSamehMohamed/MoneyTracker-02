@@ -116,19 +116,22 @@ export async function createStockTransaction(
 
     // Update linked account balance if provided
     if (input.accountId) {
-      const total = new Decimal(input.shares.toString())
-        .times(new Decimal(input.pricePerShare.toString()))
-        .times(100); // Convert to cents
+      // Calculate total amount: shares * pricePerShare
+      // pricePerShare is already in the currency unit (e.g., 1.50 = $1.50)
+      // Account balance is stored in cents, so multiply by 100
+      const shareAmount = new Decimal(input.shares.toString())
+        .times(new Decimal(input.pricePerShare.toString()));
+      const totalInCents = shareAmount.times(100);
 
       if (input.type === "buy") {
         await tx.account.update({
           where: { id: input.accountId },
-          data: { balance: { decrement: Math.round(total.toNumber()) } },
+          data: { balance: { decrement: Math.round(totalInCents.toNumber()) } },
         });
       } else if (input.type === "sell") {
         await tx.account.update({
           where: { id: input.accountId },
-          data: { balance: { increment: Math.round(total.toNumber()) } },
+          data: { balance: { increment: Math.round(totalInCents.toNumber()) } },
         });
       }
     }
@@ -291,6 +294,7 @@ export async function updateStockTransaction(
       const newShares = input.shares ? new Decimal(input.shares.toString()) : oldShares;
       const newPrice = input.pricePerShare ? new Decimal(input.pricePerShare.toString()) : oldPrice;
 
+      // Convert to cents for account balance (BigInt)
       const oldTotal = oldShares.times(oldPrice).times(100);
       const newTotal = newShares.times(newPrice).times(100);
       const diff = newTotal.minus(oldTotal);
@@ -384,6 +388,19 @@ export async function getPortfolio(userId: string) {
     orderBy: [{ company: "asc" }, { date: "asc" }],
   });
 
+  // Get current prices for all companies
+  const currentPrices = await prisma.stockCurrentPrice.findMany({
+    where: { userId },
+  });
+
+  const pricesByCompany: Record<string, any> = {};
+  currentPrices.forEach((cp) => {
+    pricesByCompany[cp.company] = {
+      price: cp.price,
+      currency: cp.currency,
+    };
+  });
+
   // Group by company and aggregate
   const holdings: Record<string, any> = {};
 
@@ -436,7 +453,21 @@ export async function getPortfolio(userId: string) {
 
       const totalInvested = totalShares.times(averageCostPerShare);
 
-      return {
+      // Calculate unrealized gain if current price is set
+      let currentPrice: string | undefined;
+      let currentMarketValue: string | undefined;
+      let unrealizedGain: string | undefined;
+
+      if (pricesByCompany[company]) {
+        const currentPriceDecimal = pricesByCompany[company].price;
+        currentPrice = currentPriceDecimal.toString();
+        currentMarketValue = totalShares.times(currentPriceDecimal).toString();
+        unrealizedGain = totalShares
+          .times(currentPriceDecimal.minus(averageCostPerShare))
+          .toString();
+      }
+
+      const holding: any = {
         company,
         currency: data.currency,
         totalShares: totalShares.toString(),
@@ -450,6 +481,14 @@ export async function getPortfolio(userId: string) {
           )
           .toString(),
       };
+
+      if (currentPrice) {
+        holding.currentPrice = currentPrice;
+        holding.currentMarketValue = currentMarketValue;
+        holding.unrealizedGain = unrealizedGain;
+      }
+
+      return holding;
     })
     .filter((holding) => new Decimal(holding.totalShares).greaterThan(0));
 
@@ -531,4 +570,30 @@ async function calculateAverageCost(
   );
 
   return totalShares.greaterThan(0) ? totalValue.dividedBy(totalShares) : new Decimal(0);
+}
+
+// Upsert current price for a stock holding
+export async function upsertCurrentPrice(
+  userId: string,
+  company: string,
+  price: string,
+  currency: string
+) {
+  const currentPrice = await prisma.stockCurrentPrice.upsert({
+    where: { userId_company: { userId, company } },
+    update: { price: new Decimal(price) },
+    create: {
+      userId,
+      company,
+      price: new Decimal(price),
+      currency,
+    },
+  });
+
+  return {
+    company: currentPrice.company,
+    price: currentPrice.price.toString(),
+    currency: currentPrice.currency,
+    updatedAt: currentPrice.updatedAt,
+  };
 }

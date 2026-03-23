@@ -184,4 +184,13 @@ export const stocksApi = {
     apiFetch<PortfolioResponse>("/stocks/portfolio", {
       method: "GET",
     }),
+
+  setCurrentPrice: (data: { company: string; price: string; currency: string }) =>
+    apiFetch<{ company: string; price: string; currency: string; updatedAt: string }>(
+      "/stocks/current-price",
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    ),
 };
