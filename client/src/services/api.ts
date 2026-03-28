@@ -1,6 +1,7 @@
 import type { Account, CreateAccountInput, UpdateAccountInput } from '../types/account';
 import type { Transaction, CreateTransactionInput, UpdateTransactionInput, TransactionFilters, Category, TransactionListResponse } from '../types/transaction';
 import type { StockTransaction, CreateStockTransactionInput, UpdateStockTransactionInput, StockTransactionFilters, StockTransactionListResponse, PortfolioResponse } from '../types/stock';
+import type { ExchangeRate, ConvertResponse, NetWorthResponse, ListRatesResponse, FetchRatesResponse } from '../types/exchange-rate';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -72,6 +73,12 @@ export const authApi = {
     }),
 
   getMe: () => apiFetch("/auth/me", { method: "GET" }),
+
+  updateProfile: (data: { name?: string; baseCurrency?: string }) =>
+    apiFetch("/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
 };
 
 export const accountsApi = {
@@ -105,6 +112,7 @@ export const transactionsApi = {
     if (filters?.type !== undefined) params.append("type", filters.type);
     if (filters?.dateFrom !== undefined) params.append("dateFrom", filters.dateFrom);
     if (filters?.dateTo !== undefined) params.append("dateTo", filters.dateTo);
+    if (filters?.convertToBase !== undefined) params.append("convertToBase", filters.convertToBase.toString());
 
     const query = params.toString();
     const endpoint = query ? `/transactions?${query}` : "/transactions";
@@ -193,4 +201,41 @@ export const stocksApi = {
         body: JSON.stringify(data),
       }
     ),
+};
+
+export const exchangeRatesApi = {
+  list: () =>
+    apiFetch<ListRatesResponse>("/exchange-rates", { method: "GET" }),
+
+  convert: (amount: string, from: string, to: string, date?: string) => {
+    const params = new URLSearchParams();
+    params.append("amount", amount);
+    params.append("from", from);
+    params.append("to", to);
+    if (date) params.append("date", date);
+
+    return apiFetch<ConvertResponse>(`/exchange-rates/convert?${params.toString()}`, {
+      method: "GET",
+    });
+  },
+
+  fetch: () =>
+    apiFetch<FetchRatesResponse>("/exchange-rates/fetch", {
+      method: "POST",
+    }),
+
+  setOverride: (fromCurrency: string, toCurrency: string, rate: string) =>
+    apiFetch<ExchangeRate>("/exchange-rates/override", {
+      method: "PUT",
+      body: JSON.stringify({ fromCurrency, toCurrency, rate }),
+    }),
+
+  removeOverride: (fromCurrency: string, toCurrency: string) =>
+    apiFetch<void>("/exchange-rates/override", {
+      method: "DELETE",
+      body: JSON.stringify({ fromCurrency, toCurrency }),
+    }),
+
+  netWorth: () =>
+    apiFetch<NetWorthResponse>("/exchange-rates/net-worth", { method: "GET" }),
 };

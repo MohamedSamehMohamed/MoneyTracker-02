@@ -9,6 +9,7 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  updateProfile: (name?: string, baseCurrency?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -88,6 +89,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("authUser");
   };
 
+  const updateProfile = async (name?: string, baseCurrency?: string) => {
+    try {
+      setError(null);
+      const response = await authApi.updateProfile({ name, baseCurrency });
+      const updatedUser = (response as { user: User }).user;
+
+      setUser(updatedUser);
+      localStorage.setItem("authUser", JSON.stringify(updatedUser));
+    } catch (err: any) {
+      const errorMsg = typeof err === "string" ? err : err?.error || "Profile update failed";
+      setError(errorMsg);
+      throw err;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -97,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error,
         login,
         register,
+        updateProfile,
         logout,
         isAuthenticated: !!user && !!token,
       }}

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../utils/prisma";
 import { signToken } from "../utils/jwt";
-import { RegisterInput, LoginInput } from "../routes/auth.schemas";
+import { RegisterInput, LoginInput, UpdateProfileInput } from "../routes/auth.schemas";
 
 export async function register(input: RegisterInput) {
   // Check if user already exists
@@ -92,6 +92,31 @@ export async function getMe(userId: string) {
     error.statusCode = 401;
     throw error;
   }
+
+  return user;
+}
+
+export async function updateProfile(userId: string, input: UpdateProfileInput) {
+  const updateData: any = {};
+
+  if (input.name) {
+    updateData.name = input.name;
+  }
+  if (input.baseCurrency) {
+    updateData.baseCurrency = input.baseCurrency;
+  }
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: updateData,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      baseCurrency: true,
+      createdAt: true,
+    },
+  });
 
   return user;
 }

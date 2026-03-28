@@ -3,10 +3,11 @@ import {
   registerHandler,
   loginHandler,
   getMeHandler,
+  updateProfileHandler,
 } from "../controllers/auth.controller";
 import { validateMiddleware } from "../middleware/validate.middleware";
 import { authMiddleware } from "../middleware/auth.middleware";
-import { registerSchema, loginSchema } from "./auth.schemas";
+import { registerSchema, loginSchema, updateProfileSchema } from "./auth.schemas";
 
 const router = Router();
 
@@ -29,6 +30,14 @@ router.get(
   "/me",
   authMiddleware,
   getMeHandler
+);
+
+// PATCH /auth/me
+router.patch(
+  "/me",
+  authMiddleware,
+  validateMiddleware(updateProfileSchema),
+  updateProfileHandler
 );
 
 export default router;

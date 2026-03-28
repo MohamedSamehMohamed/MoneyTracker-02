@@ -7,7 +7,9 @@ import accountRoutes from './routes/account.routes';
 import transactionRoutes from './routes/transaction.routes';
 import categoryRoutes from './routes/category.routes';
 import stockRoutes from './routes/stock.routes';
+import exchangeRateRoutes from './routes/exchange-rate.routes';
 import { errorMiddleware } from './middleware/error.middleware';
+import { startRateScheduler } from './services/rate-scheduler';
 
 dotenv.config();
 
@@ -25,12 +27,13 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stocks', stockRoutes);
+app.use('/api/exchange-rates', exchangeRateRoutes);
 
 // Error handling (must be last)
 app.use(errorMiddleware);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`✓ Server started on http://localhost:${PORT}`);
   console.log(`✓ Health check: http://localhost:${PORT}/api/health`);
   console.log(`✓ Auth endpoints: http://localhost:${PORT}/api/auth`);
@@ -38,6 +41,14 @@ app.listen(PORT, () => {
   console.log(`✓ Transactions endpoints: http://localhost:${PORT}/api/transactions`);
   console.log(`✓ Categories endpoints: http://localhost:${PORT}/api/categories`);
   console.log(`✓ Stocks endpoints: http://localhost:${PORT}/api/stocks`);
+  console.log(`✓ Exchange rates endpoints: http://localhost:${PORT}/api/exchange-rates`);
+
+  // Start rate scheduler after server starts
+  try {
+    await startRateScheduler();
+  } catch (error) {
+    console.error('Failed to start rate scheduler:', error);
+  }
 });
 
 export default app;

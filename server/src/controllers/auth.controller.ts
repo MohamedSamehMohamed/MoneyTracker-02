@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { register, login, getMe } from "../services/auth.service";
-import { RegisterInput, LoginInput } from "../routes/auth.schemas";
+import { register, login, getMe, updateProfile } from "../services/auth.service";
+import { RegisterInput, LoginInput, UpdateProfileInput } from "../routes/auth.schemas";
 
 export async function registerHandler(req: Request, res: Response, next: NextFunction) {
   try {
@@ -33,6 +33,19 @@ export async function getMeHandler(req: Request, res: Response, next: NextFuncti
       return res.status(401).json({ error: "Authentication required" });
     }
     const user = await getMe(req.userId);
+    return res.status(200).json({ user });
+  } catch (error: any) {
+    next(error);
+  }
+}
+
+export async function updateProfileHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    const input = req.body as UpdateProfileInput;
+    const user = await updateProfile(req.userId, input);
     return res.status(200).json({ user });
   } catch (error: any) {
     next(error);

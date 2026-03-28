@@ -13,6 +13,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import StocksPage from './pages/StocksPage';
+import { ExchangeRatesPage } from './pages/ExchangeRatesPage';
 
 function AppRoutes() {
   return (
@@ -49,6 +50,7 @@ function AppRoutes() {
                 <Route path="/categories" element={<CategoriesPage />} />
                 <Route path="/stocks" element={<StocksPage />} />
                 <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 {/* Default redirect */}
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />

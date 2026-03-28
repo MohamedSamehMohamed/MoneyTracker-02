@@ -4,19 +4,26 @@ import {
   UpdateTransactionInput,
   ListTransactionsQuery,
 } from "../routes/transaction.schemas";
+import { getHistoricalRate } from "./exchange-rate.service";
 
-function serializeTransaction(transaction: any) {
+function serializeTransaction(transaction: any, converted?: any) {
   return {
     ...transaction,
     amount: transaction.amount.toString(),
     account: transaction.account || null,
     transferAccount: transaction.transferAccount || null,
+    ...(converted && {
+      convertedAmount: converted.convertedAmount,
+      conversionRate: converted.conversionRate,
+      isApproximate: converted.isApproximate,
+    }),
   };
 }
 
 export async function listTransactions(
   userId: string,
-  filters: ListTransactionsQuery
+  filters: ListTransactionsQuery,
+  convertToBase: boolean = false
 ) {
   const skip = (filters.page - 1) * filters.limit;
 
@@ -32,7 +39,7 @@ export async function listTransactions(
       where.date.lte = new Date(filters.dateTo + "T23:59:59Z");
   }
 
-  const [transactions, total] = await Promise.all([
+  const [transactions, total, user] = await Promise.all([
     prisma.transaction.findMany({
       where,
       select: {
@@ -70,12 +77,48 @@ export async function listTransactions(
       take: filters.limit,
     }),
     prisma.transaction.count({ where }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { baseCurrency: true },
+    }),
   ]);
 
   const totalPages = Math.ceil(total / filters.limit);
 
+  let serialized = transactions.map(serializeTransaction);
+
+  if (convertToBase && user?.baseCurrency) {
+    serialized = await Promise.all(
+      serialized.map(async (transaction) => {
+        if (transaction.account?.currency && transaction.account.currency !== user.baseCurrency) {
+          try {
+            const result = await getHistoricalRate(
+              transaction.account.currency,
+              user.baseCurrency,
+              transaction.date
+            );
+            if (result.rate) {
+              const divisor = transaction.account?.currency === 'GOLD_GRAM' ? 1000 : 100;
+              const convertedAmount = (Number(transaction.amount) / divisor) * result.rate;
+              return {
+                ...transaction,
+                convertedAmount: convertedAmount.toString(),
+                conversionRate: result.rate.toString(),
+                isApproximate: !result.rateDate ||
+                  result.rateDate.toDateString() !== new Date(transaction.date).toDateString(),
+              };
+            }
+          } catch (error) {
+            console.error('Error converting transaction:', error);
+          }
+        }
+        return transaction;
+      })
+    );
+  }
+
   return {
-    transactions: transactions.map(serializeTransaction),
+    transactions: serialized,
     pagination: {
       page: filters.page,
       limit: filters.limit,

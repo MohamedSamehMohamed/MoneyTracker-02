@@ -1,6 +1,8 @@
 import React from 'react';
 import type { Transaction } from '../../types/transaction';
-import { formatAmount, getTypeLabel } from '../../utils/formatters';
+import { getTypeLabel } from '../../utils/formatters';
+import { formatCurrency, fromSmallestUnit } from '../../utils/currency';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -26,6 +28,9 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { user } = useAuth();
+  const baseCurrency = user?.baseCurrency || 'USD';
+
   const amountClass =
     transaction.type === 'income' ? 'text-green-600' : 'text-red-600';
 
@@ -70,9 +75,19 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
         <div className="text-right">
           <div className={`font-semibold ${amountClass}`}>
             {transaction.type === 'income' ? '+' : '-'}
-            {formatAmount(transaction.amount, transaction.account.currency)}{' '}
-            {transaction.account.currency.replace('GOLD_GRAM', 'g')}
+            {formatCurrency(fromSmallestUnit(transaction.amount, transaction.account.currency), transaction.account.currency)}
           </div>
+          {transaction.convertedAmount && (
+            <div className="text-sm text-gray-600 mt-1">
+              {transaction.type === 'income' ? '+' : '-'}
+              {formatCurrency(transaction.convertedAmount, baseCurrency)}
+              {transaction.isApproximate && (
+                <span className="ml-1 text-xs text-orange-600" title="Approximate rate used">
+                  ≈
+                </span>
+              )}
+            </div>
+          )}
           <div className="text-sm text-gray-500 mt-1">
             {formatDate(transaction.date)}
           </div>

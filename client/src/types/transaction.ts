@@ -30,6 +30,9 @@ export interface Transaction {
   account: Account;
   category: Category | null;
   transferAccount?: Account | null;
+  convertedAmount?: string;
+  conversionRate?: string;
+  isApproximate?: boolean;
 }
 
 export interface CreateTransactionInput {
@@ -57,6 +60,7 @@ export interface TransactionFilters {
   type?: TransactionType;
   dateFrom?: string;
   dateTo?: string;
+  convertToBase?: boolean;
 }
 
 export interface PaginationInfo {

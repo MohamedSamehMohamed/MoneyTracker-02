@@ -22,7 +22,8 @@ export async function listTransactionsHandler(
       return res.status(401).json({ error: "Authentication required" });
     }
     const filters = req.query as any as ListTransactionsQuery;
-    const result = await listTransactions(req.userId, filters);
+    const convertToBase = req.query.convertToBase === 'true';
+    const result = await listTransactions(req.userId, filters, convertToBase);
     return res.status(200).json(result);
   } catch (error) {
     next(error);

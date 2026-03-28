@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Transaction, PaginationInfo } from '../../types/transaction';
 import { TransactionItem } from './TransactionItem';
 
@@ -10,6 +10,7 @@ interface TransactionListProps {
   onDelete?: (transaction: Transaction) => void;
   onAddNew?: () => void;
   isLoading?: boolean;
+  onConvertToBaseToggle?: (convertToBase: boolean) => void;
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({
@@ -20,7 +21,17 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   onDelete,
   onAddNew,
   isLoading = false,
+  onConvertToBaseToggle,
 }) => {
+  const [showConverted, setShowConverted] = useState(false);
+
+  const handleToggleConversion = () => {
+    const newValue = !showConverted;
+    setShowConverted(newValue);
+    if (onConvertToBaseToggle) {
+      onConvertToBaseToggle(newValue);
+    }
+  };
   if (transactions.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow">
@@ -42,6 +53,21 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow">
+      {/* Header with toggle */}
+      <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showConverted}
+              onChange={handleToggleConversion}
+              className="w-4 h-4 text-blue-600 rounded"
+            />
+            <span className="text-sm text-gray-700">Show in base currency</span>
+          </label>
+        </div>
+      </div>
+
       {/* Transaction List */}
       <div>
         {transactions.map((transaction) => (
@@ -73,7 +99,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <div className="flex items-center gap-2">
               {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
                 .slice(
-                  Math.max(0, pagination.page - 3),
+                  Math.max(0, pagination.page - 1 - 2),
                   Math.min(pagination.totalPages, pagination.page + 2)
                 )
                 .map((pageNum) => (

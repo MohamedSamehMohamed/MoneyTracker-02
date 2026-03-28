@@ -91,6 +91,16 @@ export function TransactionsPage() {
     }));
   }, []);
 
+  const handleConvertToBaseToggle = useCallback((convertToBase: boolean) => {
+    // Add convertToBase as a query parameter through filters
+    setFilters((prev) => ({
+      ...prev,
+      page: 1,
+      // Store convertToBase in a way that can be passed to the API
+      ...(convertToBase && { convertToBase: true }),
+    }));
+  }, []);
+
   const handleCreateOrUpdateTransaction = async (data: any) => {
     try {
       setIsSubmitting(true);
@@ -251,6 +261,7 @@ export function TransactionsPage() {
           onDelete={(transaction) => setDeletingTransaction(transaction)}
           onAddNew={openCreateForm}
           isLoading={isListLoading}
+          onConvertToBaseToggle={handleConvertToBaseToggle}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Transaction } from '../../types/transaction';
 import { formatAmount, getTypeLabel } from '../../utils/formatters';
+import { fromSmallestUnit } from '../../utils/currency';
 
 interface DeleteTransactionDialogProps {
   isOpen: boolean;
@@ -35,8 +36,8 @@ export const DeleteTransactionDialog: React.FC<DeleteTransactionDialogProps> = (
               <span className="font-medium">{getTypeLabel(transaction.type)}</span>
             </div>
             <div className="text-2xl font-bold text-gray-900 mb-2">
-              {formatAmount(transaction.amount, transaction.account.currency)}{' '}
-              {transaction.account.currency.replace('GOLD_GRAM', 'g')}
+              {fromSmallestUnit(transaction.amount, transaction.account.currency).toFixed(transaction.account.currency === 'GOLD_GRAM' ? 3 : 2)}{' '}
+              {transaction.account.currency === 'GOLD_GRAM' ? 'g' : transaction.account.currency}
             </div>
             <div className="text-sm text-gray-600">
               {transaction.category && (

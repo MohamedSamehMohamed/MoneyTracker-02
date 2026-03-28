@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { Transaction, CreateTransactionInput, Account, Category } from '../../types/transaction';
+import { fromSmallestUnit } from '../../utils/currency';
 
 interface TransactionFormModalProps {
   isOpen: boolean;
@@ -56,7 +57,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     defaultValues: {
       accountId: initialData?.accountId || '',
       type: initialData?.type || 'income',
-      amount: initialData ? parseFloat(initialData.amount) : undefined,
+      amount: initialData ? fromSmallestUnit(initialData.amount, initialData.account.currency) : undefined,
       categoryId: initialData?.categoryId,
       note: initialData?.note || '',
       date: initialData?.date || new Date().toISOString().split('T')[0],
@@ -104,7 +105,7 @@ export const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
       reset({
         accountId: initialData.accountId,
         type: initialData.type,
-        amount: parseFloat(initialData.amount),
+        amount: fromSmallestUnit(initialData.amount, initialData.account.currency),
         categoryId: initialData.categoryId,
         note: initialData.note || '',
         date: initialData.date,
