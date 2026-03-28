@@ -18,6 +18,4 @@ RUN npm install -g serve
 
 COPY --from=builder /app/dist /app/dist
 
-EXPOSE 80
-
-CMD ["serve", "-s", "/app/dist", "-l", "80"]
+CMD ["sh", "-c", "serve -s /app/dist -l ${PORT:-3000}"]
