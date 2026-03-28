@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RateList } from '../components/exchange-rates/RateList';
 import { RateOverrideModal } from '../components/exchange-rates/RateOverrideModal';
 import { ErrorBoundary } from '../components/ErrorBoundary';

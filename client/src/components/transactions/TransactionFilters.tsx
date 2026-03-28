@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { TransactionFilters as TransactionFiltersType, Account, Category } from '../../types/transaction';
 

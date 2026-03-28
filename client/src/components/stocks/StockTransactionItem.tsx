@@ -1,5 +1,5 @@
 import type { StockTransaction } from '../../types/stock';
-import { formatShares, formatPrice, formatCurrency, formatDate } from '../../utils/formatters';
+import { formatShares, formatPrice, formatCurrencyValue, formatDate } from '../../utils/formatters';
 
 interface StockTransactionItemProps {
   transaction: StockTransaction;
@@ -54,11 +54,11 @@ export function StockTransactionItem({
       {/* Values */}
       <div className="text-right mr-4">
         <p className="font-semibold text-gray-900">
-          {formatCurrency(totalValue, transaction.currency)}
+          {formatCurrencyValue(totalValue, transaction.currency)}
         </p>
         {realizedGain !== null && !isBuy && (
           <p className={`text-sm ${realizedGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            Gain: {formatCurrency(realizedGain, transaction.currency)}
+            Gain: {formatCurrencyValue(realizedGain, transaction.currency)}
           </p>
         )}
         <p className="text-xs text-gray-500">{formatDate(transaction.date)}</p>

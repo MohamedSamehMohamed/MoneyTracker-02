@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Transaction } from '../../types/transaction';
-import { formatAmount, getTypeLabel } from '../../utils/formatters';
+import { getTypeLabel } from '../../utils/formatters';
 import { fromSmallestUnit } from '../../utils/currency';
 
 interface DeleteTransactionDialogProps {

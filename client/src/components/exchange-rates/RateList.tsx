@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ExchangeRateItem } from '../../types/exchange-rate';
 
 /**
@@ -35,7 +34,6 @@ interface RateListProps {
 
 export function RateList({
   rates,
-  baseCurrency,
   lastUpdated,
   onRefresh,
   onOverride,
