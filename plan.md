@@ -350,15 +350,15 @@ MoneyTrackerNew/
 
 > **Goal**: Users can create and manage their money sources.
 
-- [ ] 3.1 Server: `GET /api/accounts` — list user's accounts
-- [ ] 3.2 Server: `POST /api/accounts` — create account (name, type, currency)
-- [ ] 3.3 Server: `PATCH /api/accounts/:id` — update account name/icon
-- [ ] 3.4 Server: `DELETE /api/accounts/:id` — delete account (only if balance is 0)
-- [ ] 3.5 Server: input validation with Zod for all account routes
-- [ ] 3.6 Client: Accounts page — list all accounts with balances
-- [ ] 3.7 Client: "Add Account" modal/form (select type: cash/bank/wallet/gold, currency, name)
-- [ ] 3.8 Client: edit and delete account actions
-- [ ] 3.9 Client: account type icons and visual indicators
+- [x] 3.1 Server: `GET /api/accounts` — list user's accounts
+- [x] 3.2 Server: `POST /api/accounts` — create account (name, type, currency)
+- [x] 3.3 Server: `PATCH /api/accounts/:id` — update account name/icon
+- [x] 3.4 Server: `DELETE /api/accounts/:id` — delete account (only if balance is 0)
+- [x] 3.5 Server: input validation with Zod for all account routes
+- [x] 3.6 Client: Accounts page — list all accounts with balances
+- [x] 3.7 Client: "Add Account" modal/form (select type: cash/bank/wallet/gold, currency, name)
+- [x] 3.8 Client: edit and delete account actions
+- [x] 3.9 Client: account type icons and visual indicators
 
 **Result**: Users can create accounts like "Cash EGP", "Gold Savings", "NBE Bank", "Vodafone Cash".
 
@@ -368,17 +368,17 @@ MoneyTrackerNew/
 
 > **Goal**: Users can add income/expenses and see their transaction history.
 
-- [ ] 4.1 Server: `POST /api/transactions` — create transaction + update account balance
-- [ ] 4.2 Server: `GET /api/transactions` — list with pagination, filters (date, account, category, type)
-- [ ] 4.3 Server: `PATCH /api/transactions/:id` — edit transaction + recalculate balance
-- [ ] 4.4 Server: `DELETE /api/transactions/:id` — delete + reverse balance change
-- [ ] 4.5 Server: transfer logic — deduct from one account, add to another (as a DB transaction)
-- [ ] 4.6 Server: input validation with Zod for all transaction routes
-- [ ] 4.7 Client: "Add Transaction" page/modal — amount, type (income/expense/transfer), account, category, date, note
-- [ ] 4.8 Client: Transaction history page — list with filter controls (date range, account, category)
-- [ ] 4.9 Client: edit and delete transaction actions
-- [ ] 4.10 Client: transfer form (from account → to account)
-- [ ] 4.11 Client: show running balance per account after each transaction
+- [x] 4.1 Server: `POST /api/transactions` — create transaction + update account balance
+- [x] 4.2 Server: `GET /api/transactions` — list with pagination, filters (date, account, category, type)
+- [x] 4.3 Server: `PATCH /api/transactions/:id` — edit transaction + recalculate balance
+- [x] 4.4 Server: `DELETE /api/transactions/:id` — delete + reverse balance change
+- [x] 4.5 Server: transfer logic — deduct from one account, add to another (as a DB transaction)
+- [x] 4.6 Server: input validation with Zod for all transaction routes
+- [x] 4.7 Client: "Add Transaction" page/modal — amount, type (income/expense/transfer), account, category, date, note
+- [x] 4.8 Client: Transaction history page — list with filter controls (date range, account, category)
+- [x] 4.9 Client: edit and delete transaction actions
+- [x] 4.10 Client: transfer form (from account → to account)
+- [x] 4.11 Client: show running balance per account after each transaction
 
 **Result**: Full transaction flow working. Users can track all income, expenses, and transfers.
 
@@ -388,16 +388,16 @@ MoneyTrackerNew/
 
 > **Goal**: Convert all assets to EGP and show total net worth.
 
-- [ ] 5.1 Server: create exchange rate service — fetch from external API (USD→EGP, EUR→EGP, etc.)
-- [ ] 5.2 Server: create gold price service — fetch gold gram price in EGP
-- [ ] 5.3 Server: store fetched rates in `exchange_rates` table
-- [ ] 5.4 Server: set up node-cron job to refresh rates every 4 hours
-- [ ] 5.5 Server: `GET /api/rates` — return current cached rates
-- [ ] 5.6 Server: `POST /api/rates/refresh` — manual rate refresh
-- [ ] 5.7 Server: `GET /api/dashboard/net-worth` — calculate total across all accounts in EGP
-- [ ] 5.8 Server: `GET /api/dashboard/balances` — all accounts with original + converted amounts
-- [ ] 5.9 Client: display converted values next to original values on accounts page
-- [ ] 5.10 Client: show total net worth prominently on dashboard
+- [x] 5.1 Server: create exchange rate service — fetch from external API (USD→EGP, EUR→EGP, etc.)
+- [x] 5.2 Server: create gold price service — fetch gold gram price in EGP
+- [x] 5.3 Server: store fetched rates in `exchange_rates` table
+- [x] 5.4 Server: set up node-cron job to refresh rates every 4 hours
+- [x] 5.5 Server: `GET /api/rates` — return current cached rates
+- [x] 5.6 Server: `POST /api/rates/refresh` — manual rate refresh
+- [x] 5.7 Server: `GET /api/dashboard/net-worth` — calculate total across all accounts in EGP
+- [x] 5.8 Server: `GET /api/dashboard/balances` — all accounts with original + converted amounts
+- [x] 5.9 Client: display converted values next to original values on accounts page
+- [x] 5.10 Client: show total net worth prominently on dashboard
 
 **Result**: Users see their total net worth in EGP, with live conversion of USD, EUR, and gold.
 

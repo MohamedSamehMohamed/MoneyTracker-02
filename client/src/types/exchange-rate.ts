@@ -11,6 +11,7 @@ export type ExchangeRate = ExchangeRateItem;
 export interface NetWorthBreakdown {
   accountId: string;
   accountName: string;
+  accountType: string;
   originalCurrency: string;
   originalBalance: string;
   convertedBalance: string;

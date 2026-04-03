@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react';
-import { exchangeRatesApi } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currency';
 
 interface NetWorthBreakdown {
   accountId: string;
   accountName: string;
+  accountType: string;
   originalCurrency: string;
   originalBalance: string;
   convertedBalance: string;
@@ -20,31 +18,14 @@ interface NetWorthData {
   lastRateUpdate: string;
 }
 
-export function NetWorthCard() {
-  const { user } = useAuth();
-  const [netWorth, setNetWorth] = useState<NetWorthData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface NetWorthCardProps {
+  data: NetWorthData | null;
+  loading: boolean;
+  error: string | null;
+  onRefresh: () => void;
+}
 
-  useEffect(() => {
-    fetchNetWorth();
-  }, [user?.baseCurrency]);
-
-  const fetchNetWorth = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await exchangeRatesApi.netWorth();
-      setNetWorth(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch net worth');
-      console.error('Error fetching net worth:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
+export function NetWorthCard({ data, loading, error, onRefresh }: NetWorthCardProps) {
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-6 animate-pulse">
@@ -64,7 +45,7 @@ export function NetWorthCard() {
         <h2 className="text-lg font-semibold text-red-900 mb-2">Error Loading Net Worth</h2>
         <p className="text-red-700 mb-4">{error}</p>
         <button
-          onClick={fetchNetWorth}
+          onClick={onRefresh}
           className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
         >
           Retry
@@ -73,7 +54,7 @@ export function NetWorthCard() {
     );
   }
 
-  if (!netWorth) {
+  if (!data) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <p className="text-gray-600">No accounts found. Create an account to see your net worth.</p>
@@ -81,17 +62,27 @@ export function NetWorthCard() {
     );
   }
 
+  const isStale = data.lastRateUpdate && 
+    (new Date().getTime() - new Date(data.lastRateUpdate).getTime()) > 86400000;
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-start mb-6">
         <div>
-          <h2 className="text-sm font-medium text-gray-600 mb-2">Total Net Worth</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-medium text-gray-600 mb-2">Total Net Worth</h2>
+            {isStale && (
+              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded mb-2">
+                ⚠️ Rates may be outdated
+              </span>
+            )}
+          </div>
           <p className="text-4xl font-bold text-gray-900">
-            {formatCurrency(netWorth.totalNetWorth, netWorth.baseCurrency)}
+            {formatCurrency(data.totalNetWorth, data.baseCurrency)}
           </p>
         </div>
         <button
-          onClick={fetchNetWorth}
+          onClick={onRefresh}
           className="text-sm text-blue-600 hover:text-blue-700 transition px-3 py-1 rounded hover:bg-blue-50"
         >
           Refresh
@@ -99,15 +90,15 @@ export function NetWorthCard() {
       </div>
 
       <div className="text-sm text-gray-500 mb-6">
-        Last updated: {new Date(netWorth.lastRateUpdate).toLocaleString()}
+        Last updated: {new Date(data.lastRateUpdate).toLocaleString()}
       </div>
 
-      {netWorth.breakdown.length > 0 && (
+      {data.breakdown.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-sm font-semibold text-gray-700">Account Breakdown</h3>
-          {netWorth.breakdown.map((account) => {
+          {data.breakdown.map((account) => {
             const rate = parseFloat(account.rate);
-            const rateUnavailable = rate === 1 && account.originalCurrency !== netWorth.baseCurrency;
+            const rateUnavailable = rate === 1 && account.originalCurrency !== data.baseCurrency;
 
             return (
               <div key={account.accountId} className="flex justify-between items-start border-t pt-4">
@@ -124,7 +115,7 @@ export function NetWorthCard() {
                     {rateUnavailable ? (
                       <span className="text-orange-600">Rate unavailable</span>
                     ) : (
-                      formatCurrency(account.convertedBalance, netWorth.baseCurrency)
+                      formatCurrency(account.convertedBalance, data.baseCurrency)
                     )}
                   </p>
                   {!rateUnavailable && (

@@ -21,7 +21,9 @@
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "Bash(powershell -NoProfile -Command \".\\\\.specify\\\\scripts\\\\powershell\\\\check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
       "Bash(npx prisma:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(xargs wc:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json 2>&1)"
     ]
   }
 }
