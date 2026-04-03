@@ -104,9 +104,9 @@ export function SpendingChart() {
             }}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [
-              formatCurrency(value, data.baseCurrency),
-              name.charAt(0).toUpperCase() + name.slice(1),
+            formatter={(value, name) => [
+              formatCurrency(value as number, data.baseCurrency),
+              String(name).charAt(0).toUpperCase() + String(name).slice(1),
             ]}
             contentStyle={{
               backgroundColor: 'white',
