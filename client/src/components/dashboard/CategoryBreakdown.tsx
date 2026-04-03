@@ -206,8 +206,8 @@ export function CategoryBreakdown() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number, name: string, props: { payload: { percentage: number } }) => [
-                    `${formatCurrency(value, data.baseCurrency)} (${props.payload.percentage.toFixed(1)}%)`,
+                  formatter={(value, name, props) => [
+                    `${formatCurrency(value as number, data.baseCurrency)} (${(props as { payload: { percentage: number } }).payload.percentage.toFixed(1)}%)`,
                     name,
                   ]}
                   contentStyle={{
