@@ -2,6 +2,7 @@ import type { Account, CreateAccountInput, UpdateAccountInput } from '../types/a
 import type { Transaction, CreateTransactionInput, UpdateTransactionInput, TransactionFilters, Category, TransactionListResponse } from '../types/transaction';
 import type { StockTransaction, CreateStockTransactionInput, UpdateStockTransactionInput, StockTransactionFilters, StockTransactionListResponse, PortfolioResponse } from '../types/stock';
 import type { ExchangeRate, ConvertResponse, NetWorthResponse, ListRatesResponse, FetchRatesResponse } from '../types/exchange-rate';
+import type { SpendingChartResponse, CategorySummaryResponse, IncomeVsExpenseResponse } from '../types/dashboard';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -238,4 +239,29 @@ export const exchangeRatesApi = {
 
   netWorth: () =>
     apiFetch<NetWorthResponse>("/exchange-rates/net-worth", { method: "GET" }),
+};
+
+export const dashboardApi = {
+  spendingChart: (months?: number) => {
+    const params = months ? `?months=${months}` : "";
+    return apiFetch<SpendingChartResponse>(`/dashboard/spending-chart${params}`, {
+      method: "GET",
+    });
+  },
+
+  categorySummary: (dateFrom?: string, dateTo?: string) => {
+    const params = new URLSearchParams();
+    if (dateFrom) params.append("dateFrom", dateFrom);
+    if (dateTo) params.append("dateTo", dateTo);
+    const query = params.toString();
+    const endpoint = query ? `/dashboard/category-summary?${query}` : "/dashboard/category-summary";
+    return apiFetch<CategorySummaryResponse>(endpoint, { method: "GET" });
+  },
+
+  incomeVsExpense: (months?: number) => {
+    const params = months ? `?months=${months}` : "";
+    return apiFetch<IncomeVsExpenseResponse>(`/dashboard/income-vs-expense${params}`, {
+      method: "GET",
+    });
+  },
 };

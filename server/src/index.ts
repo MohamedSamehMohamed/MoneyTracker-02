@@ -8,6 +8,7 @@ import transactionRoutes from './routes/transaction.routes';
 import categoryRoutes from './routes/category.routes';
 import stockRoutes from './routes/stock.routes';
 import exchangeRateRoutes from './routes/exchange-rate.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 import { errorMiddleware } from './middleware/error.middleware';
 import { startRateScheduler } from './services/rate-scheduler';
 
@@ -31,6 +32,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/stocks', stockRoutes);
 app.use('/api/exchange-rates', exchangeRateRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling (must be last)
 app.use(errorMiddleware);
@@ -45,6 +47,7 @@ app.listen(PORT, async () => {
   console.log(`✓ Categories endpoints: http://localhost:${PORT}/api/categories`);
   console.log(`✓ Stocks endpoints: http://localhost:${PORT}/api/stocks`);
   console.log(`✓ Exchange rates endpoints: http://localhost:${PORT}/api/exchange-rates`);
+  console.log(`✓ Dashboard endpoints: http://localhost:${PORT}/api/dashboard`);
 
   // Start rate scheduler after server starts
   try {

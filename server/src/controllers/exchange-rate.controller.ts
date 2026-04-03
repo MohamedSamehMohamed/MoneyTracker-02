@@ -379,6 +379,7 @@ export async function getNetWorth(req: Request, res: Response): Promise<void> {
       breakdown.push({
         accountId: account.id,
         accountName: account.name,
+        accountType: account.type,
         originalCurrency: account.currency,
         originalBalance: balance.toString(),
         convertedBalance: convertedBalance.toString(),
