@@ -59,8 +59,26 @@ export const listTransactionsSchema = z.object({
   type: z.enum(["income", "expense", "transfer"]).optional(),
   dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  convertToBase: z.enum(["true", "false"]).optional(),
 });
+
+export const exportTransactionsSchema = z.object({
+  dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  accountId: z.string().uuid().optional(),
+  categoryId: z.string().uuid().optional(),
+  type: z.enum(["income", "expense", "transfer"]).optional(),
+}).refine(
+  (data) => {
+    return new Date(data.dateFrom) <= new Date(data.dateTo);
+  },
+  {
+    message: "dateTo must be greater than or equal to dateFrom",
+    path: ["dateTo"],
+  }
+);
 
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
 export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
 export type ListTransactionsQuery = z.infer<typeof listTransactionsSchema>;
+export type ExportTransactionsQuery = z.infer<typeof exportTransactionsSchema>;

@@ -5,6 +5,7 @@ import {
   createTransactionHandler,
   updateTransactionHandler,
   deleteTransactionHandler,
+  exportTransactionsHandler,
 } from "../controllers/transaction.controller";
 import { validateMiddleware } from "../middleware/validate.middleware";
 import { authMiddleware } from "../middleware/auth.middleware";
@@ -12,6 +13,7 @@ import {
   createTransactionSchema,
   updateTransactionSchema,
   listTransactionsSchema,
+  exportTransactionsSchema,
 } from "./transaction.schemas";
 
 const router = Router();
@@ -22,6 +24,14 @@ router.get(
   authMiddleware,
   validateMiddleware(listTransactionsSchema, "query"),
   listTransactionsHandler
+);
+
+// GET /transactions/export
+router.get(
+  "/export",
+  authMiddleware,
+  validateMiddleware(exportTransactionsSchema, "query"),
+  exportTransactionsHandler
 );
 
 // GET /transactions/:id

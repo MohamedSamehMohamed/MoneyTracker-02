@@ -138,7 +138,8 @@ interface CategoryData {
 export async function getCategorySummary(
   userId: string,
   dateFrom?: string,
-  dateTo?: string
+  dateTo?: string,
+  type: "income" | "expense" = "expense"
 ): Promise<{
   baseCurrency: string;
   dateFrom: string;
@@ -164,7 +165,7 @@ export async function getCategorySummary(
   const transactions = await prisma.transaction.findMany({
     where: {
       userId,
-      type: "expense",
+      type,
       date: { gte: startDate, lte: endDate },
     },
     select: {
@@ -283,5 +284,254 @@ export async function getIncomeVsExpense(
       income: m.totalIncome,
       expense: m.totalExpense,
     })),
+  };
+}
+
+interface DataPoint {
+  date: string;
+  netWorth: string;
+}
+
+export async function getNetWorthHistory(
+  userId: string,
+  dateFrom?: string,
+  dateTo?: string,
+  granularity: "daily" | "weekly" | "monthly" | "auto" = "auto"
+): Promise<{
+  baseCurrency: string;
+  dateFrom: string;
+  dateTo: string;
+  granularity: string;
+  dataPoints: DataPoint[];
+}> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { baseCurrency: true },
+  });
+
+  const baseCurrency = user?.baseCurrency || "EGP";
+
+  const now = new Date();
+  const startDate = dateFrom
+    ? new Date(dateFrom + "T00:00:00Z")
+    : new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const endDate = dateTo
+    ? new Date(dateTo + "T23:59:59Z")
+    : now;
+
+  const formatDateStr = (d: Date): string => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const dateRangeMs = endDate.getTime() - startDate.getTime();
+  const daysInRange = Math.ceil(dateRangeMs / (1000 * 60 * 60 * 24));
+
+  let resolvedGranularity = granularity;
+  if (granularity === "auto") {
+    if (daysInRange < 31) {
+      resolvedGranularity = "daily";
+    } else if (daysInRange < 93) {
+      resolvedGranularity = "weekly";
+    } else {
+      resolvedGranularity = "monthly";
+    }
+  }
+
+  const generateDataPointDates = (start: Date, end: Date, gran: string): Date[] => {
+    const dates: Date[] = [];
+    const current = new Date(start);
+
+    switch (gran) {
+      case "daily":
+        while (current <= end) {
+          dates.push(new Date(current));
+          current.setDate(current.getDate() + 1);
+        }
+        break;
+      case "weekly":
+        const weekStart = new Date(start);
+        weekStart.setDate(start.getDate() - start.getDay());
+        while (weekStart <= end) {
+          dates.push(new Date(weekStart));
+          weekStart.setDate(weekStart.getDate() + 7);
+        }
+        break;
+      case "monthly":
+        const monthStart = new Date(start.getFullYear(), start.getMonth(), 1);
+        while (monthStart <= end) {
+          const lastDayOfMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+          dates.push(lastDayOfMonth);
+          monthStart.setMonth(monthStart.getMonth() + 1);
+        }
+        break;
+    }
+
+    return dates;
+  };
+
+  const dataPointDates = generateDataPointDates(startDate, endDate, resolvedGranularity);
+
+  const accounts = await prisma.account.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      currency: true,
+      balance: true,
+    },
+  });
+
+  const initialBalances = new Map<string, bigint>();
+  for (const account of accounts) {
+    initialBalances.set(account.id, account.balance);
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      date: { gte: startDate, lte: endDate },
+    },
+    select: {
+      id: true,
+      type: true,
+      amount: true,
+      date: true,
+      accountId: true,
+      transferToId: true,
+    },
+    orderBy: { date: "desc" },
+  });
+
+  const rateCache = new Map<string, number>();
+
+  const getRate = async (fromCurrency: string, dateString: string): Promise<number> => {
+    if (fromCurrency === baseCurrency) return 1;
+
+    const cacheKey = `${fromCurrency}_${dateString}`;
+    if (rateCache.has(cacheKey)) {
+      return rateCache.get(cacheKey)!;
+    }
+
+    const date = new Date(dateString + "T23:59:59Z");
+    const result = await getHistoricalRate(fromCurrency, baseCurrency, date);
+    const rate = result.rate || 1;
+
+    rateCache.set(cacheKey, rate);
+    return rate;
+  };
+
+  const ratesToFetch = new Set<string>();
+  for (const dataPointDate of dataPointDates) {
+    const dateString = formatDateStr(dataPointDate);
+    for (const account of accounts) {
+      if (account.currency !== baseCurrency) {
+        ratesToFetch.add(`${account.currency}_${dateString}`);
+      }
+    }
+  }
+
+  await Promise.all(
+    Array.from(ratesToFetch).map(async (key) => {
+      const [currency, dateString] = key.split('_');
+      await getRate(currency, dateString);
+    })
+  );
+
+  const workingBalances = new Map<string, bigint>();
+  for (const account of accounts) {
+    workingBalances.set(account.id, account.balance);
+  }
+
+  const transactionsAfterRange = await prisma.transaction.findMany({
+    where: {
+      userId,
+      date: { gt: endDate },
+    },
+    select: {
+      type: true,
+      amount: true,
+      accountId: true,
+      transferToId: true,
+    },
+  });
+
+  for (const tx of transactionsAfterRange) {
+    const balance = workingBalances.get(tx.accountId) || BigInt(0);
+    if (tx.type === "income") {
+      workingBalances.set(tx.accountId, balance - tx.amount);
+    } else if (tx.type === "expense") {
+      workingBalances.set(tx.accountId, balance + tx.amount);
+    } else if (tx.type === "transfer") {
+      workingBalances.set(tx.accountId, balance + tx.amount);
+      if (tx.transferToId) {
+        const destBalance = workingBalances.get(tx.transferToId) || BigInt(0);
+        workingBalances.set(tx.transferToId, destBalance - tx.amount);
+      }
+    }
+  }
+
+  const sortedDataPoints = [...dataPointDates].sort((a, b) => b.getTime() - a.getTime());
+  let txPointer = 0;
+
+  const results: DataPoint[] = [];
+
+  for (const dataPointDate of sortedDataPoints) {
+    const dateString = formatDateStr(dataPointDate);
+
+    while (txPointer < transactions.length && new Date(transactions[txPointer].date) > dataPointDate) {
+      const tx = transactions[txPointer];
+      const balance = workingBalances.get(tx.accountId) || BigInt(0);
+
+      if (tx.type === "income") {
+        workingBalances.set(tx.accountId, balance - tx.amount);
+      } else if (tx.type === "expense") {
+        workingBalances.set(tx.accountId, balance + tx.amount);
+      } else if (tx.type === "transfer") {
+        workingBalances.set(tx.accountId, balance + tx.amount);
+        if (tx.transferToId) {
+          const destBalance = workingBalances.get(tx.transferToId) || BigInt(0);
+          workingBalances.set(tx.transferToId, destBalance - tx.amount);
+        }
+      }
+
+      txPointer++;
+    }
+
+    let totalNetWorth = BigInt(0);
+
+    for (const [accountId, balance] of workingBalances.entries()) {
+      const account = accounts.find((a) => a.id === accountId);
+      if (!account) continue;
+
+      const divisor = getDivisor(account.currency);
+      const balanceInCurrency = Number(balance) / divisor;
+
+      let convertedAmount = balanceInCurrency;
+
+      if (account.currency !== baseCurrency) {
+        const cacheKey = `${account.currency}_${dateString}`;
+        const rate = rateCache.get(cacheKey) || 1;
+        convertedAmount = balanceInCurrency * rate;
+      }
+
+      totalNetWorth += BigInt(Math.round(convertedAmount * 100));
+    }
+
+    results.push({
+      date: dateString,
+      netWorth: formatAmount(Number(totalNetWorth) / 100),
+    });
+  }
+
+  const dataPoints = results.reverse();
+
+  return {
+    baseCurrency,
+    dateFrom: formatDateStr(startDate),
+    dateTo: formatDateStr(endDate),
+    granularity: resolvedGranularity,
+    dataPoints,
   };
 }

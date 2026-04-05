@@ -141,6 +141,44 @@ export const transactionsApi = {
     apiFetch<void>(`/transactions/${id}`, {
       method: "DELETE",
     }),
+
+  exportCsv: async (filters: { dateFrom: string; dateTo: string; accountId?: string; categoryId?: string; type?: "income" | "expense" | "transfer" }) => {
+    const params = new URLSearchParams();
+    params.append("dateFrom", filters.dateFrom);
+    params.append("dateTo", filters.dateTo);
+    if (filters.accountId) params.append("accountId", filters.accountId);
+    if (filters.categoryId) params.append("categoryId", filters.categoryId);
+    if (filters.type) params.append("type", filters.type);
+
+    const url = `${API_BASE_URL}/transactions/export?${params.toString()}`;
+    const token = localStorage.getItem("authToken");
+
+    const headers = new Headers();
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      let errorData: ApiError;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: `HTTP ${response.status}` };
+      }
+      throw errorData;
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = `transactions_${filters.dateFrom}_${filters.dateTo}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(downloadUrl);
+  },
 };
 
 export const categoriesApi = {
@@ -249,10 +287,11 @@ export const dashboardApi = {
     });
   },
 
-  categorySummary: (dateFrom?: string, dateTo?: string) => {
+  categorySummary: (dateFrom?: string, dateTo?: string, type?: "income" | "expense") => {
     const params = new URLSearchParams();
     if (dateFrom) params.append("dateFrom", dateFrom);
     if (dateTo) params.append("dateTo", dateTo);
+    if (type) params.append("type", type);
     const query = params.toString();
     const endpoint = query ? `/dashboard/category-summary?${query}` : "/dashboard/category-summary";
     return apiFetch<CategorySummaryResponse>(endpoint, { method: "GET" });
@@ -263,5 +302,15 @@ export const dashboardApi = {
     return apiFetch<IncomeVsExpenseResponse>(`/dashboard/income-vs-expense${params}`, {
       method: "GET",
     });
+  },
+
+  netWorthHistory: (dateFrom?: string, dateTo?: string, granularity?: "daily" | "weekly" | "monthly" | "auto") => {
+    const params = new URLSearchParams();
+    if (dateFrom) params.append("dateFrom", dateFrom);
+    if (dateTo) params.append("dateTo", dateTo);
+    if (granularity) params.append("granularity", granularity);
+    const query = params.toString();
+    const endpoint = query ? `/dashboard/net-worth-history?${query}` : "/dashboard/net-worth-history";
+    return apiFetch<{ baseCurrency: string; dateFrom: string; dateTo: string; granularity: string; dataPoints: { date: string; netWorth: string }[] }>(endpoint, { method: "GET" });
   },
 };

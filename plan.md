@@ -407,15 +407,15 @@ MoneyTrackerNew/
 
 > **Goal**: A useful home page with balances, charts, and recent activity.
 
-- [ ] 6.1 Server: `GET /api/dashboard/spending-chart` — monthly income vs expense data
-- [ ] 6.2 Server: `GET /api/dashboard/income-vs-expense` — totals by time period
-- [ ] 6.3 Server: `GET /api/transactions/summary` — spending by category
-- [ ] 6.4 Client: Dashboard layout — net worth card, account balance cards, recent transactions
-- [ ] 6.5 Client: install Recharts, build monthly spending bar chart
-- [ ] 6.6 Client: build spending-by-category pie/donut chart
-- [ ] 6.7 Client: build income vs expense trend line chart
-- [ ] 6.8 Client: quick-add transaction button on dashboard
-- [ ] 6.9 Client: "last updated" indicator for exchange rates
+- [x] 6.1 Server: `GET /api/dashboard/spending-chart` — monthly income vs expense data
+- [x] 6.2 Server: `GET /api/dashboard/income-vs-expense` — totals by time period
+- [x] 6.3 Server: `GET /api/transactions/summary` — spending by category
+- [x] 6.4 Client: Dashboard layout — net worth card, account balance cards, recent transactions
+- [x] 6.5 Client: install Recharts, build monthly spending bar chart
+- [x] 6.6 Client: build spending-by-category pie/donut chart
+- [x] 6.7 Client: build income vs expense trend line chart
+- [x] 6.8 Client: quick-add transaction button on dashboard
+- [x] 6.9 Client: "last updated" indicator for exchange rates
 
 **Result**: Dashboard gives a full financial overview at a glance.
 
