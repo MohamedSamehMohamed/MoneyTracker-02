@@ -3,6 +3,7 @@ import {
   getSpendingChartHandler,
   getCategorySummaryHandler,
   getIncomeVsExpenseHandler,
+  getNetWorthHistoryHandler,
 } from "../controllers/dashboard.controller";
 import { validateMiddleware } from "../middleware/validate.middleware";
 import { authMiddleware } from "../middleware/auth.middleware";
@@ -10,6 +11,7 @@ import {
   spendingChartSchema,
   categorySummarySchema,
   incomeVsExpenseSchema,
+  netWorthHistorySchema,
 } from "./dashboard.schemas";
 
 const router = Router();
@@ -33,6 +35,13 @@ router.get(
   authMiddleware,
   validateMiddleware(incomeVsExpenseSchema, "query"),
   getIncomeVsExpenseHandler
+);
+
+router.get(
+  "/net-worth-history",
+  authMiddleware,
+  validateMiddleware(netWorthHistorySchema, "query"),
+  getNetWorthHistoryHandler
 );
 
 export default router;

@@ -23,7 +23,11 @@
       "Bash(npx prisma:*)",
       "WebSearch",
       "Bash(xargs wc:*)",
-      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json 2>&1)"
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json 2>&1)",
+      "Bash(bash .specify/scripts/powershell/create-new-feature.ps1 \"phase 8 from plan.md\" --json --short-name \"reports-analytics\" \"Reports & Analytics\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/create-new-feature.ps1 \"phase 8 from plan.md\" -Json -ShortName \"reports-analytics\" \"Reports & Analytics\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/update-agent-context.ps1 -AgentType claude)",
+      "Bash(powershell -ExecutionPolicy Bypass -File .specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks)"
     ]
   }
 }

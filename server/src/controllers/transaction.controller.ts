@@ -5,11 +5,13 @@ import {
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  exportTransactions,
 } from "../services/transaction.service";
 import {
   CreateTransactionInput,
   UpdateTransactionInput,
   ListTransactionsQuery,
+  ExportTransactionsQuery,
 } from "../routes/transaction.schemas";
 
 export async function listTransactionsHandler(
@@ -22,7 +24,7 @@ export async function listTransactionsHandler(
       return res.status(401).json({ error: "Authentication required" });
     }
     const filters = req.query as any as ListTransactionsQuery;
-    const convertToBase = req.query.convertToBase === 'true';
+    const convertToBase = filters.convertToBase === 'true';
     const result = await listTransactions(req.userId, filters, convertToBase);
     return res.status(200).json(result);
   } catch (error) {
@@ -115,6 +117,31 @@ export async function deleteTransactionHandler(
     }
     if (error.statusCode === 400) {
       return res.status(400).json({ error: error.message });
+    }
+    next(error);
+  }
+}
+
+export async function exportTransactionsHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+    const filters = req.query as unknown as ExportTransactionsQuery;
+    const { csv, count } = await exportTransactions(req.userId, filters);
+
+    const filename = `transactions_${filters.dateFrom}_${filters.dateTo}.csv`;
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(csv);
+  } catch (error: any) {
+    if (error.statusCode === 404) {
+      return res.status(404).json({ error: error.message });
     }
     next(error);
   }

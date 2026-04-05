@@ -3,6 +3,7 @@ import {
   CreateTransactionInput,
   UpdateTransactionInput,
   ListTransactionsQuery,
+  ExportTransactionsQuery,
 } from "../routes/transaction.schemas";
 import { getHistoricalRate } from "./exchange-rate.service";
 
@@ -467,4 +468,101 @@ export async function deleteTransaction(
       where: { id: transactionId },
     });
   });
+}
+
+export async function exportTransactions(
+  userId: string,
+  filters: ExportTransactionsQuery
+): Promise<{ csv: string; count: number }> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { baseCurrency: true },
+  });
+
+  if (!user) {
+    const error = new Error("User not found") as any;
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const baseCurrency = user.baseCurrency;
+
+  const where: any = { userId };
+  if (filters.accountId) where.accountId = filters.accountId;
+  if (filters.categoryId) where.categoryId = filters.categoryId;
+  if (filters.type) where.type = filters.type;
+  where.date = {};
+  if (filters.dateFrom) where.date.gte = new Date(filters.dateFrom + "T00:00:00Z");
+  if (filters.dateTo) where.date.lte = new Date(filters.dateTo + "T23:59:59Z");
+
+  const transactions = await prisma.transaction.findMany({
+    where,
+    select: {
+      date: true,
+      type: true,
+      note: true,
+      amount: true,
+      account: {
+        select: { currency: true, name: true },
+      },
+      category: {
+        select: { name: true },
+      },
+    },
+    orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+    take: 10000,
+  });
+
+  if (transactions.length === 0) {
+    const error = new Error("No transactions found for the specified filters") as any;
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const getDivisor = (currency: string): number => {
+    return currency === "GOLD_GRAM" ? 1000 : 100;
+  };
+
+  const rateCache = new Map<string, number>();
+
+  const getRate = async (fromCurrency: string, dateString: string): Promise<number> => {
+    if (fromCurrency === baseCurrency) return 1;
+
+    const cacheKey = `${fromCurrency}_${dateString}`;
+    if (rateCache.has(cacheKey)) {
+      return rateCache.get(cacheKey)!;
+    }
+
+    const date = new Date(dateString + "T23:59:59Z");
+    const result = await getHistoricalRate(fromCurrency, baseCurrency, date);
+    const rate = result.rate || 1;
+
+    rateCache.set(cacheKey, rate);
+    return rate;
+  };
+
+  let csv = "Date,Type,Category,Account,Note,Amount,Currency,Converted Amount,Base Currency\n";
+
+  for (const transaction of transactions) {
+    const currency = transaction.account?.currency || baseCurrency;
+    const divisor = getDivisor(currency);
+    const amountInCurrency = Number(transaction.amount) / divisor;
+
+    const decimals = currency === "GOLD_GRAM" ? 3 : 2;
+    const formattedAmount = amountInCurrency.toFixed(decimals);
+
+    const dateKey = transaction.date.toISOString().split('T')[0];
+    const rate = await getRate(currency, dateKey);
+
+    const convertedAmount = amountInCurrency * rate;
+    const baseDecimals = baseCurrency === "GOLD_GRAM" ? 3 : 2;
+    const formattedConvertedAmount = convertedAmount.toFixed(baseDecimals);
+
+    const formattedDate = transaction.date.toISOString().split('T')[0];
+    const note = (transaction.note || "").replace(/"/g, '""');
+
+    csv += `"${formattedDate}","${transaction.type}","${transaction.category?.name || 'Uncategorized'}","${transaction.account?.name || 'N/A'}","${note}","${formattedAmount}","${currency}","${formattedConvertedAmount}","${baseCurrency}"\n`;
+  }
+
+  return { csv, count: transactions.length };
 }
