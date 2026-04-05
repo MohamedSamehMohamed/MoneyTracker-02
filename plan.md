@@ -441,12 +441,12 @@ MoneyTrackerNew/
 
 > **Goal**: Detailed financial reports beyond the dashboard.
 
-- [ ] 8.1 Client: Reports page with date range selector
-- [ ] 8.2 Client: net worth over time chart (line chart)
-- [ ] 8.3 Client: spending breakdown by category (detailed table + chart)
-- [ ] 8.4 Client: monthly comparison (this month vs last month)
-- [ ] 8.5 Client: income sources breakdown
-- [ ] 8.6 Client: CSV export of transactions (filtered)
+- [x] 8.1 Client: Reports page with date range selector
+- [x] 8.2 Client: net worth over time chart (line chart)
+- [x] 8.3 Client: spending breakdown by category (detailed table + chart)
+- [x] 8.4 Client: monthly comparison (this month vs last month)
+- [x] 8.5 Client: income sources breakdown
+- [x] 8.6 Client: CSV export of transactions (filtered)
 
 **Result**: Users can analyze their finances with detailed reports and export data.
 
