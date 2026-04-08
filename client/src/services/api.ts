@@ -188,6 +188,23 @@ export const categoriesApi = {
       method: "GET",
     });
   },
+
+  create: (data: { name: string; type: 'income' | 'expense'; icon?: string; color?: string }) =>
+    apiFetch<{ category: Category }>("/categories", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: { name?: string; icon?: string; color?: string }) =>
+    apiFetch<{ category: Category }>(`/categories/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/categories/${id}`, {
+      method: "DELETE",
+    }),
 };
 
 export const stocksApi = {

@@ -1,0 +1,13 @@
+{
+  "name": "money-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\" --names \"server,client\" --prefix-colors \"bgBlue.bold,bgGreen.bold\"",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "build:all": "cd server && npm run build && cd ../client && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
