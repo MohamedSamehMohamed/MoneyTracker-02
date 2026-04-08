@@ -14,6 +14,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import StocksPage from './pages/StocksPage';
 import { ExchangeRatesPage } from './pages/ExchangeRatesPage';
+import { Toaster } from 'react-hot-toast';
 
 function AppRoutes() {
   return (
@@ -68,6 +69,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <Toaster position="top-right" />
       </AuthProvider>
     </BrowserRouter>
   );
